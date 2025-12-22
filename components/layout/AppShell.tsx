@@ -8,6 +8,7 @@ import EvaluationTable from "@/components/assessment/EvaluationTable";
 import IndividualEvaluation from "@/components/assessment/IndividualEvaluation";
 import SummaryPage from "@/components/reports/SummaryPage";
 import ProfilePage from "@/components/profile/ProfilePage";
+import ProgressPage from "@/components/reports/ProgressPage";
 
 export default function AppShell() {
   const { view } = useAppContext();
@@ -28,6 +29,8 @@ export default function AppShell() {
         return <SummaryPage />;
       case "profile":
         return <ProfilePage />;
+      case "progress":
+        return <ProgressPage />;
       default:
         return <LoginPage />;
     }

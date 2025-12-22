@@ -7,6 +7,7 @@ export type View =
   | 'evaluation'
   | 'individual'
   | 'summary'
+  | 'progress'
   | 'profile';
 
 export interface UserPermissions {
