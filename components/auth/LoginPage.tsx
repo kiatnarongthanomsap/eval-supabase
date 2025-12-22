@@ -296,7 +296,7 @@ const LoginPage = () => {
               <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-2 text-indigo-600">
                   <Code className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Dev Mode: Quick Login</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Debug Mode: Quick Login</span>
                 </div>
                 <span className="text-[10px] bg-indigo-50 text-indigo-400 px-2 py-1 rounded-full font-mono">DEBUG</span>
               </div>
@@ -321,9 +321,7 @@ const LoginPage = () => {
                           <span className="truncate">{u.position}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1 text-right min-w-[60px]">
-                        <span className="text-[10px] bg-gray-50 text-gray-400 px-1.5 py-0.5 rounded border border-gray-100 group-hover:border-indigo-100 group-hover:text-indigo-400 font-mono transition-colors">{formatSalaryGroup(u.salaryGroup)}</span>
-                      </div>
+
                     </div>
                   ))}
                 </div>

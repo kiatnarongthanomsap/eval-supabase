@@ -59,7 +59,7 @@ interface AppContextType {
   setAllUsers: React.Dispatch<React.SetStateAction<User[]>>;
   updateSystemConfig: (config: SystemConfig) => Promise<void>;
   refreshData: (targetUser?: User | null) => Promise<void>;
-  fetchReportData: () => Promise<any>;
+  fetchReportData: (options?: { raw?: boolean }) => Promise<any>;
   sendEvaluationEmail: (data: any) => Promise<boolean>;
   addExclusion: (evaluatorId: number, targetId: number, reason: string) => Promise<void>;
   removeExclusion: (id: number) => Promise<void>;
@@ -174,9 +174,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const fetchReportData = async () => {
+  const fetchReportData = async (options?: { raw?: boolean }) => {
     try {
-      const url = `${API_BASE_URL}?action=get_init_data`;
+      let url = `${API_BASE_URL}?action=get_init_data`;
+      if (options?.raw) {
+        url += '&raw=true';
+      }
       // No evaluator_id means fetching all data (Global View)
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch report data');

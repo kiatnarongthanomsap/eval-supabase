@@ -28,6 +28,19 @@ const IndividualEvaluation = () => {
   if (!currentPerson) return null;
 
   const handleSave = () => {
+    // Validation: Check if all criteria have been scored
+    const currentScores = scores[currentPerson.internalId] || {};
+    const missingCriteria = personCriteria.filter(c => !currentScores[c.id]);
+
+    if (missingCriteria.length > 0) {
+      toast({
+        title: "ประเมินไม่ครบถ้วน",
+        description: `กรุณาให้คะแนนให้ครบทุกข้อ (ขาด ${missingCriteria.length} ข้อ)`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({ title: 'บันทึกการประเมินแล้ว', description: `การประเมินสำหรับ ${currentPerson.name} ถูกบันทึกแล้ว` });
     goBack();
   };

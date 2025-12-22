@@ -99,7 +99,7 @@ export const AssessmentCard = ({
                 </div>
 
                 {/* Desktop Preview - Scrollable Area */}
-                <div className="hidden md:flex flex-col gap-2 mt-4 px-1 overflow-y-auto max-h-[180px] custom-scrollbar pr-2 -mr-2">
+                <div className="hidden md:flex flex-col gap-2 mt-4 px-1 overflow-y-auto max-h-[260px] custom-scrollbar pr-2 -mr-2">
                     {targets.map((t) => {
                         const personCriteria = getCriteriaForUser(t);
                         const isDone = personCriteria.length > 0 && personCriteria.every(c => scores[t.internalId]?.[c.id]);
@@ -127,6 +127,13 @@ export const AssessmentCard = ({
                             </div>
                         );
                     })}
+                    {targets.length > 4 && (
+                        <div className="text-center py-2 sticky bottom-0 bg-gradient-to-t from-white via-white/90 to-transparent pt-4">
+                            <span className="text-[10px] text-gray-400 font-medium px-3 py-1 bg-gray-50 rounded-full flex items-center justify-center gap-1 mx-auto w-fit animate-pulse border border-gray-100">
+                                <ChevronDown className="h-3 w-3" /> เลื่อนเพื่อดูเพิ่มเติม ({targets.length - 4})
+                            </span>
+                        </div>
+                    )}
                 </div>
             </CardContent>
             <CardFooter className="hidden md:flex p-6 pt-2">
