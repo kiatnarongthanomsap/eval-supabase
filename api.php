@@ -223,6 +223,25 @@ function getInitData($pdo) {
                 }
                 $data['scores'][$s['target_internal_id']][$s['criteria_id']] = (int)$s['score'];
             }
+        } elseif (isset($_GET['raw']) && $_GET['raw'] === 'true') {
+            // Raw Global View: Get ALL scores mapped by Evaluator -> Target -> Criteria
+            // We return a new key 'all_scores' for this to avoid breaking existing logic depending on 'scores'
+            $data['all_scores'] = [];
+            $stmt = $pdo->query("SELECT * FROM evaluations");
+            $rawScores = $stmt->fetchAll();
+            foreach ($rawScores as $s) {
+                $eid = $s['evaluator_internal_id'];
+                $tid = $s['target_internal_id'];
+                $cid = $s['criteria_id'];
+                
+                if (!isset($data['all_scores'][$eid])) {
+                    $data['all_scores'][$eid] = [];
+                }
+                if (!isset($data['all_scores'][$eid][$tid])) {
+                     $data['all_scores'][$eid][$tid] = [];
+                }
+                $data['all_scores'][$eid][$tid][$cid] = (int)$s['score'];
+            }
         } else {
             // Global/Report View: Get Average Scores
             // We calculate the average score for each criteria for each target
