@@ -42,13 +42,14 @@ type FormattedData = {
   email?: string;
   evaluatorCount?: number;
   totalEvaluators?: number;
+  role: string;
 };
 
 const SummaryPage = () => {
   const { goBack, deptAdjustment, getCriteriaForUser, allUsers, fetchReportData, user, exclusions } = useAppContext();
   const [useNormalization, setUseNormalization] = useState(true);
   const [filterName, setFilterName] = useState('');
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'finalScore', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'role', direction: 'ascending' });
   const [selectedPerson, setSelectedPerson] = useState<FormattedData | null>(null);
   const [localScores, setLocalScores] = useState<any>({});
   const [rawScores, setRawScores] = useState<any>({});
@@ -153,7 +154,7 @@ const SummaryPage = () => {
           }
         });
 
-        return { ...target, finalScore, levelLabel: levelInfo.label, levelColor: levelInfo.color, comment: displayComment, isDone, evaluatorCount: evaluatorCounts[target.internalId] || 0, totalEvaluators };
+        return { ...target, role: target.role, finalScore, levelLabel: levelInfo.label, levelColor: levelInfo.color, comment: displayComment, isDone, evaluatorCount: evaluatorCounts[target.internalId] || 0, totalEvaluators };
       });
   }, [allUsers, localScores, useNormalization, deptAdjustment, getCriteriaForUser, localComments, evaluatorCounts, exclusions]);
 
@@ -179,21 +180,52 @@ const SummaryPage = () => {
   const sortedData = useMemo(() => {
     let filtered = tableData.filter(u => u.name.toLowerCase().includes(filterName.toLowerCase()));
 
-    if (sortConfig.key !== null) {
-      filtered.sort((a, b) => {
-        const key = sortConfig.key!;
-        // Use loose equality for null/undefined check
-        const aVal = (a as any)[key] ?? '';
-        const bVal = (b as any)[key] ?? '';
+    const ROLE_ORDER: { [key: string]: number } = {
+      'MANAGER': 1,
+      'ASST': 2,
+      'HEAD': 3,
+      'STAFF': 4,
+      'COMMITTEE': 5
+    };
+
+    filtered.sort((a, b) => {
+      const key = sortConfig.key || 'role';
+
+      // Custom multi-level sorting logic
+      const compare = (itemA: any, itemB: any, sortKey: string) => {
+        let aVal = itemA[sortKey] ?? '';
+        let bVal = itemB[sortKey] ?? '';
+
+        if (sortKey === 'role') {
+          aVal = ROLE_ORDER[itemA.role] || 99;
+          bVal = ROLE_ORDER[itemB.role] || 99;
+        }
 
         if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+          return aVal.localeCompare(bVal);
         }
-        if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
+        if (aVal < bVal) return -1;
+        if (aVal > bVal) return 1;
         return 0;
-      });
-    }
+      };
+
+      // 1. Primary Sort
+      let result = compare(a, b, key);
+      if (sortConfig.direction === 'descending') result *= -1;
+
+      // 2. Secondary Sort (Position / Role) if not primary
+      if (result === 0 && key !== 'role') {
+        result = compare(a, b, 'role');
+      }
+
+      // 3. Tertiary Sort (Name) if still tied
+      if (result === 0 && key !== 'name') {
+        result = compare(a, b, 'name');
+      }
+
+      return result;
+    });
+
     return filtered;
   }, [tableData, filterName, sortConfig]);
 
@@ -342,7 +374,7 @@ const SummaryPage = () => {
                       </TableCell>
                       <TableCell className="text-gray-600 font-medium text-sm">{formatSalaryGroup(e.salaryGroup)}</TableCell>
                       <TableCell className="text-center">
-                        {e.isDone ? (
+                        {e.finalScore > 0 ? (
                           <div className="flex flex-col items-center">
                             <span className="inline-block font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded-lg min-w-[4rem]">{e.finalScore.toFixed(2)}%</span>
                             <span className="text-[10px] text-gray-400 mt-1 font-medium">จาก {e.evaluatorCount}/{e.totalEvaluators} คน</span>
