@@ -258,6 +258,18 @@ function getInitData($pdo) {
         }
     } catch (PDOException $e) { $data['error_scores'] = $e->getMessage(); }
 
+    // 4.5 Evaluator Counts (New)
+    try {
+        if (!isset($_GET['evaluator_id']) && (!isset($_GET['raw']) || $_GET['raw'] !== 'true')) {
+            $stmt = $pdo->query("SELECT target_internal_id, COUNT(DISTINCT evaluator_internal_id) as count FROM evaluations GROUP BY target_internal_id");
+            $counts = $stmt->fetchAll();
+            $data['evaluator_counts'] = [];
+            foreach ($counts as $c) {
+                $data['evaluator_counts'][$c['target_internal_id']] = (int)$c['count'];
+            }
+        }
+    } catch (PDOException $e) { $data['error_counts'] = $e->getMessage(); }
+
     // 5. Comments
     try {
         $evaluatorId = $_GET['evaluator_id'] ?? null;

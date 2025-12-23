@@ -2,7 +2,8 @@
 
 import React, { useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
-import { ArrowLeft, Save, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
+import { getAiSuggestions } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +19,7 @@ const IndividualEvaluation = () => {
   // Local state for scores to support "Save only if complete" logic
   const [localScores, setLocalScores] = React.useState<{ [key: string]: number }>({});
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isAiLoading, setIsAiLoading] = React.useState(false);
 
   // Initialize local scores from global scores on mount
   React.useEffect(() => {
@@ -163,6 +165,63 @@ const IndividualEvaluation = () => {
               <span className="w-1 h-5 bg-primary rounded-full"></span>
               ความคิดเห็นโดยรวม
             </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (isAiLoading) return;
+                setIsAiLoading(true);
+                try {
+                  const currentComments = typeof comments[currentPerson.internalId] === 'string'
+                    ? comments[currentPerson.internalId]
+                    : '';
+
+                  const result = await getAiSuggestions({
+                    position: currentPerson.position,
+                    department: currentPerson.dept,
+                    currentScores: localScores,
+                    comments: currentComments
+                  });
+
+                  if (result.success) {
+                    const suggestions = result.data;
+                    // Update scores based on suggestions
+                    setLocalScores(prev => {
+                      const newScores = { ...prev };
+                      Object.entries(suggestions).forEach(([key, adjustment]) => {
+                        if (newScores[key]) {
+                          // Simple logic: clamp between 1 and 4
+                          newScores[key] = Math.max(1, Math.min(4, newScores[key] + Math.round(adjustment)));
+                        }
+                      });
+                      return newScores;
+                    });
+
+                    toast({
+                      title: "AI Suggestion Applied",
+                      description: "ปรับคะแนนตามคำแนะนำของ AI เรียบร้อยแล้ว",
+                      duration: 3000,
+                    });
+                  } else {
+                    throw new Error(result.error);
+                  }
+                } catch (error: any) {
+                  console.error("AI Error:", error);
+                  toast({
+                    title: "เกิดข้อผิดพลาด",
+                    description: error.message || "ไม่สามารถขอคำแนะนำจาก AI ได้ในขณะนี้",
+                    variant: "destructive"
+                  });
+                } finally {
+                  setIsAiLoading(false);
+                }
+              }}
+              className="ml-auto text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+              disabled={isAiLoading || isOutOfTime}
+            >
+              {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              ขอคำแนะนำจาก AI
+            </Button>
           </CardHeader>
           <CardContent className="p-4 pt-1">
 

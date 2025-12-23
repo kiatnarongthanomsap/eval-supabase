@@ -147,11 +147,11 @@ const EvaluationTable = () => {
               <table className="w-full border-separate border-spacing-0 min-w-[1200px]">
                 <thead>
                   <tr className="shadow-sm">
-                    <th className="p-6 text-left sticky top-0 left-0 bg-gray-50/95 backdrop-blur-sm z-50 border-r border-b border-gray-200 w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] h-[120px] align-middle">
+                    <th className="p-6 text-left sticky top-0 left-0 bg-gray-50/95 backdrop-blur-md z-[100] border-r border-b border-gray-200 w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] h-[120px] align-middle">
                       <span className="text-base font-bold text-gray-800">หัวข้อการประเมิน</span>
                     </th>
                     {people.map(person => (
-                      <th key={person.internalId} className="p-4 min-w-[200px] text-center align-top h-[120px] border-r border-b border-gray-200 sticky top-0 bg-gray-50/95 backdrop-blur-sm z-40">
+                      <th key={person.internalId} className="p-4 min-w-[200px] text-center align-top h-[120px] border-r border-b border-gray-200 sticky top-0 bg-gray-50/95 backdrop-blur-md z-[90]">
                         <div className="flex flex-col items-center gap-2">
                           <div className="relative">
                             <Image src={person.img} width={56} height={56} alt={person.name} className="w-14 h-14 rounded-full border-4 border-white shadow-md object-cover bg-gray-100" />
@@ -182,7 +182,7 @@ const EvaluationTable = () => {
                     return (
                       <React.Fragment key={cat.id}>
                         <tr className="bg-gray-50/50">
-                          <td colSpan={people.length + 1} className={cn("px-6 py-3 text-xs font-bold uppercase tracking-wider sticky left-0 z-30 border-r border-b border-gray-200 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]", cat.color.replace('bg-', 'bg-opacity-10 text-').replace('-100', '-700'))}>
+                          <td colSpan={people.length + 1} className={cn("px-6 py-3 text-xs font-bold uppercase tracking-wider sticky left-0 z-[40] border-r border-b border-gray-200 shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]", cat.color.replace('bg-', 'bg-opacity-10 text-').replace('-100', '-700'))}>
                             <div className="flex items-center gap-2">
                               <span className={cn("w-2 h-2 rounded-full", cat.color.replace('bg-', 'bg-'))}></span>
                               {cat.name}
@@ -191,11 +191,11 @@ const EvaluationTable = () => {
                         </tr>
                         {catCriteria.map(c => (
                           <tr key={c.id} className="group hover:bg-indigo-50/30 transition-colors">
-                            <td className="p-6 text-sm font-medium sticky left-0 bg-white group-hover:bg-indigo-50/30 border-r border-b border-gray-100 z-10 w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
+                            <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
                               <div className="flex justify-between items-start gap-2">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span className="cursor-help text-gray-700 leading-relaxed block">{c.text}</span>
+                                    <span className="cursor-help text-gray-700 group-hover:text-indigo-600 transition-colors leading-relaxed block">{c.text}</span>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="max-w-md p-4 text-sm bg-gray-900 text-white border-0 shadow-xl"><p>{c.description}</p></TooltipContent>
                                 </Tooltip>
@@ -229,7 +229,7 @@ const EvaluationTable = () => {
                   })}
                   {/* Total Score Row */}
                   <tr className="bg-gray-50 font-bold">
-                    <td className="p-6 text-sm sticky left-0 bg-gray-50 border-r border-b border-gray-200 z-20 w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
+                    <td className="p-6 text-sm sticky left-0 bg-gray-50 border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
                       <span className="text-gray-800">คะแนนรวม (ปรับตามน้ำหนัก)</span>
                     </td>
                     {people.map(person => (
@@ -240,7 +240,7 @@ const EvaluationTable = () => {
                   </tr>
                   {/* Comment Row */}
                   <tr className="bg-white">
-                    <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-200 z-20 w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] align-top pt-8">
+                    <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] align-top pt-8">
                       <span className="text-gray-700">ความคิดเห็นผู้ประเมิน</span>
                     </td>
                     {people.map(person => (

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
-import { calculateTotal, getScoreLevel, formatSalaryGroup } from '@/lib/helpers';
+import { calculateTotal, getScoreLevel, formatSalaryGroup, isExcluded, findTargets } from '@/lib/helpers';
 import { ROLES, INITIAL_CRITERIA } from '@/lib/constants';
 import { ArrowLeft, Download, ArrowUpDown, ArrowUp, ArrowDown, Search, FileSpreadsheet, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,16 +40,19 @@ type FormattedData = {
   salaryGroup: string;
   img: string;
   email?: string;
+  evaluatorCount?: number;
+  totalEvaluators?: number;
 };
 
 const SummaryPage = () => {
-  const { goBack, deptAdjustment, getCriteriaForUser, allUsers, fetchReportData, user } = useAppContext();
+  const { goBack, deptAdjustment, getCriteriaForUser, allUsers, fetchReportData, user, exclusions } = useAppContext();
   const [useNormalization, setUseNormalization] = useState(true);
   const [filterName, setFilterName] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'finalScore', direction: 'descending' });
   const [selectedPerson, setSelectedPerson] = useState<FormattedData | null>(null);
   const [localScores, setLocalScores] = useState<any>({});
   const [localComments, setLocalComments] = useState<any>({});
+  const [evaluatorCounts, setEvaluatorCounts] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
@@ -60,6 +63,7 @@ const SummaryPage = () => {
       if (data) {
         setLocalScores(data.scores || {});
         setLocalComments(data.comments || {});
+        setEvaluatorCounts(data.evaluator_counts || {});
       }
       setLoading(false);
     };
@@ -82,9 +86,63 @@ const SummaryPage = () => {
         const isSelf = user?.internalId === target.internalId;
         const displayComment = isSelf ? 'HIDDEN_SELF' : comment; // Use special flag
 
-        return { ...target, finalScore, levelLabel: levelInfo.label, levelColor: levelInfo.color, comment: displayComment, isDone };
+        // Calculate Total Evaluators (Y)
+        // We need to find how many people satisfy: findTargets(evaluator) contains target
+        // This is O(N*N) but acceptable for N < 1000
+        let totalEvaluators = 0;
+        allUsers.forEach(evaluator => {
+          if (!evaluator.isActive) return;
+          if (evaluator.internalId === target.internalId) return; // Self evaluation usually not counted in this context unless specified, but let's assume not
+
+          // Check if this evaluator should evaluate target
+          // Logic from findTargets reversed/reused:
+          // 1. Committee evaluates Manager, Asst, Head (if diff orgId)
+          if (evaluator.role === ROLES.COMMITTEE) {
+            if ([ROLES.MANAGER, ROLES.ASST, ROLES.HEAD].includes(target.role) && evaluator.orgId !== target.orgId) {
+              if (!isExcluded(evaluator.orgId, target.orgId, exclusions)) totalEvaluators++;
+              return;
+            }
+          }
+
+          // 2. Performance (Down) - Ancestors evaluate Descendants
+          // Check if evaluator is ancestor of target
+          let curr = target.parentInternalId;
+          let isAncestor = false;
+          while (curr) {
+            if (curr === evaluator.internalId) {
+              isAncestor = true;
+              break;
+            }
+            const p = allUsers.find(u => u.internalId === curr);
+            curr = p ? p.parentInternalId : null;
+          }
+          if (isAncestor) {
+            if (!isExcluded(evaluator.orgId, target.orgId, exclusions)) totalEvaluators++;
+            return;
+          }
+
+          // 3. Feedback (Up) - Descendants evaluate Ancestors
+          // Check if evaluator is descendant of target
+          // Check if target is ancestor of evaluator
+          curr = evaluator.parentInternalId;
+          let isDescendant = false;
+          while (curr) {
+            if (curr === target.internalId) {
+              isDescendant = true;
+              break;
+            }
+            const p = allUsers.find(u => u.internalId === curr);
+            curr = p ? p.parentInternalId : null;
+          }
+          if (isDescendant) {
+            if (!isExcluded(evaluator.orgId, target.orgId, exclusions)) totalEvaluators++;
+            return;
+          }
+        });
+
+        return { ...target, finalScore, levelLabel: levelInfo.label, levelColor: levelInfo.color, comment: displayComment, isDone, evaluatorCount: evaluatorCounts[target.internalId] || 0, totalEvaluators };
       });
-  }, [allUsers, localScores, useNormalization, deptAdjustment, getCriteriaForUser, localComments]);
+  }, [allUsers, localScores, useNormalization, deptAdjustment, getCriteriaForUser, localComments, evaluatorCounts, exclusions]);
 
   // Dept Diagnostics
   const deptAverages = useMemo(() => {
@@ -110,8 +168,10 @@ const SummaryPage = () => {
 
     if (sortConfig.key !== null) {
       filtered.sort((a, b) => {
-        const aVal = a[sortConfig.key!];
-        const bVal = b[sortConfig.key!];
+        const key = sortConfig.key!;
+        // Use loose equality for null/undefined check
+        const aVal = (a as any)[key] ?? '';
+        const bVal = (b as any)[key] ?? '';
 
         if (typeof aVal === 'string' && typeof bVal === 'string') {
           return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
@@ -140,7 +200,7 @@ const SummaryPage = () => {
   };
 
   const handleExport = () => {
-    const header = "ชื่อ-นามสกุล,อีเมล,ตำแหน่ง,แผนก,กลุ่มเงินเดือน,คะแนนรวม (%),ระดับ,ความเห็น\n";
+    const header = "ชื่อ-นามสกุล,อีเมล,ตำแหน่ง,แผนก,กลุ่มเงินเดือน,คะแนนรวม (%),ประเมินแล้ว (คน),ผู้ประเมินทั้งหมด (คน),ระดับ,ความเห็น\n";
     const rows = sortedData.map(d => {
       let commentStr = "";
       if (d.comment === 'HIDDEN_SELF') {
@@ -152,14 +212,14 @@ const SummaryPage = () => {
       }
 
       const comment = `"${commentStr.replace(/"/g, '""')}"`;
-      return [d.name, d.email || '', d.position, d.dept, d.salaryGroup, d.finalScore.toFixed(2), d.levelLabel, comment].join(",");
+      return [d.name, d.email || '', d.position, d.dept, d.salaryGroup, d.finalScore.toFixed(2), d.evaluatorCount || 0, d.totalEvaluators || 0, d.levelLabel, comment].join(",");
     }).join("\n");
     downloadCSV(`evaluation_summary_${new Date().toISOString().slice(0, 10)}.csv`, header + rows);
   };
 
   const handleDetailedExport = () => {
     // 1. Prepare Headers
-    const staticHeaders = ["ชื่อ-นามสกุล", "อีเมล", "ตำแหน่ง", "แผนก", "กลุ่มเงินเดือน", "คะแนนรวม (%)", "ระดับ", "ความเห็น"];
+    const staticHeaders = ["ชื่อ-นามสกุล", "อีเมล", "ตำแหน่ง", "แผนก", "กลุ่มเงินเดือน", "คะแนนรวม (%)", "ประเมินแล้ว (คน)", "ผู้ประเมินทั้งหมด (คน)", "ระดับ", "ความเห็น"];
     const criteriaHeaders = INITIAL_CRITERIA.map(c => `${c.id} ${c.text}`);
     const headerRow = [...staticHeaders, ...criteriaHeaders].join(",") + "\n";
 
@@ -172,6 +232,8 @@ const SummaryPage = () => {
         d.dept,
         d.salaryGroup,
         d.finalScore.toFixed(2),
+        d.evaluatorCount || 0,
+        d.totalEvaluators || 0,
         d.levelLabel,
       ];
 
@@ -267,7 +329,12 @@ const SummaryPage = () => {
                       </TableCell>
                       <TableCell className="text-gray-600 font-medium text-sm">{formatSalaryGroup(e.salaryGroup)}</TableCell>
                       <TableCell className="text-center">
-                        {e.isDone ? <span className="inline-block font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded-lg min-w-[4rem]">{e.finalScore.toFixed(2)}%</span> : <span className="text-gray-300">-</span>}
+                        {e.isDone ? (
+                          <div className="flex flex-col items-center">
+                            <span className="inline-block font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded-lg min-w-[4rem]">{e.finalScore.toFixed(2)}%</span>
+                            <span className="text-[10px] text-gray-400 mt-1 font-medium">จาก {e.evaluatorCount}/{e.totalEvaluators} คน</span>
+                          </div>
+                        ) : <span className="text-gray-300">-</span>}
                       </TableCell>
                       <TableCell className="text-center">
                         {e.isDone ? <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${e.levelColor} shadow-sm`}>{e.levelLabel}</span> : <span className="text-gray-300">-</span>}

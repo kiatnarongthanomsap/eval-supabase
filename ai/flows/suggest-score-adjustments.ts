@@ -8,13 +8,14 @@
  * - SuggestScoreAdjustmentsOutput - The return type for the suggestScoreAdjustments function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const SuggestScoreAdjustmentsInputSchema = z.object({
   position: z.string().describe('The position of the employee being evaluated.'),
   department: z.string().describe('The department of the employee being evaluated.'),
   currentScores: z.record(z.string(), z.number()).describe('The current scores for the employee.'),
+  comments: z.string().optional().describe('Comments provided by the evaluator.'),
 });
 export type SuggestScoreAdjustmentsInput = z.infer<typeof SuggestScoreAdjustmentsInputSchema>;
 
@@ -27,17 +28,18 @@ export async function suggestScoreAdjustments(input: SuggestScoreAdjustmentsInpu
 
 const prompt = ai.definePrompt({
   name: 'suggestScoreAdjustmentsPrompt',
-  input: {schema: SuggestScoreAdjustmentsInputSchema},
-  output: {schema: SuggestScoreAdjustmentsOutputSchema},
+  input: { schema: SuggestScoreAdjustmentsInputSchema },
+  output: { schema: SuggestScoreAdjustmentsOutputSchema },
   prompt: `You are an HR expert providing guidance on performance review scores.
 
   Based on the employee's position and department, suggest score adjustments to ensure fairness.
   Provide the score adjustments as a JSON object where the keys are the criteria IDs and the values are the adjustments.
   The adjustments can be positive or negative numbers. Keep the adjustments small.
 
-  Department: {{{department}}}
-  Position: {{{position}}}
-  Current Scores: {{{currentScores}}}
+  Department: {{department}}
+  Position: {{position}}
+  Current Scores: {{currentScores}}
+  Evaluator Comments: {{comments}}
 
   Ensure that the output is a valid JSON object.
   `,
@@ -50,7 +52,12 @@ const suggestScoreAdjustmentsFlow = ai.defineFlow(
     outputSchema: SuggestScoreAdjustmentsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const { output } = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('AI Flow Error:', error);
+      throw error;
+    }
   }
 );
