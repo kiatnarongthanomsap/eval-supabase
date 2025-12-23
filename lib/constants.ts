@@ -95,3 +95,21 @@ export const CRITERIA_CATEGORIES: CriteriaCategory[] = [
   { id: 'CHAR', name: 'ด้านคุณลักษณะ (Officer Characteristics)', color: 'bg-emerald-50 text-emerald-700' },
   { id: 'EXEC', name: 'ด้านคุณลักษณะ (Executive Characteristics)', color: 'bg-purple-50 text-purple-700' },
 ];
+
+// --- 5. New Logic Constants (Final Score Weighting) ---
+export const CATEGORY_WEIGHTS = {
+  PERF: 0.60,
+  CHAR: 0.40,
+  EXEC: 0.40,
+};
+
+// Weights by Evaluated Person's Role and Evaluator's relationship
+// Keys are the Evaluated Person's Role
+// Values are weights for Superior, Committee, and Subordinate
+export const EVALUATOR_WEIGHTS: Record<Role, { Superior: number; Committee: number; Subordinate: number }> = {
+  MANAGER: { Superior: 0, Committee: 0.80, Subordinate: 0.20 },
+  ASST: { Superior: 0.50, Committee: 0.30, Subordinate: 0.20 },
+  HEAD: { Superior: 0.40, Committee: 0.40, Subordinate: 0.20 },
+  STAFF: { Superior: 0.60, Committee: 0.20, Subordinate: 0.20 },
+  COMMITTEE: { Superior: 0, Committee: 0, Subordinate: 0 },
+};

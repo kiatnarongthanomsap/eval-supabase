@@ -36,6 +36,7 @@ export interface User {
   permissions?: UserPermissions;
   mobile?: string;
   email?: string;
+  weight?: number; // Dynamic weight for evaluation
 }
 
 export interface Target extends User {

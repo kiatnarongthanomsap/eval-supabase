@@ -184,6 +184,7 @@ function getInitData($pdo) {
                 'isActive' => isset($u['is_active']) ? (bool)$u['is_active'] : true,
                 'mobile' => $u['mobile'] ?? null,
                 'email' => $u['email'] ?? null,
+                'weight' => isset($u['weight']) ? (float)$u['weight'] : null,
             ];
         }
     } catch (PDOException $e) { $data['error_users'] = $e->getMessage(); }

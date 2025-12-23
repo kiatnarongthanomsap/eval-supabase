@@ -110,7 +110,110 @@ export const findTargets = (currentUser: User | null, usersList: User[], exclusi
   });
 };
 
-export function calculateTotal(personInternalId: string, scores: ScoreData, criteria: Criteria[]): number {
+// --- 5. Advanced Calculation Logic ---
+export function calculateFinalWeightedScore(
+  target: User,
+  allRawScores: { [evaluatorId: string]: { [targetId: string]: { [criteriaId: string]: number } } },
+  allUsers: User[],
+  criteria: Criteria[],
+  evaluatorWeightsTable: any,
+  categoryWeights: any,
+  exclusions: Exclusion[]
+): number {
+  // 1. Identify all evaluators for this target and their relationships
+  const evaluatorGroups: { [key in 'Superior' | 'Committee' | 'Subordinate']: string[] } = {
+    Superior: [],
+    Committee: [],
+    Subordinate: []
+  };
+
+  allUsers.forEach(u => {
+    if (u.internalId === target.internalId) return;
+
+    const targetsForThisUser = findTargets(u, allUsers, exclusions);
+    const targetMatch = targetsForThisUser.find(t => t.internalId === target.internalId);
+
+    if (targetMatch) {
+      if (targetMatch.type.includes('Performance (Down)')) {
+        evaluatorGroups.Superior.push(u.internalId);
+      } else if (targetMatch.type.includes('Performance (Committee)')) {
+        evaluatorGroups.Committee.push(u.internalId);
+      } else if (targetMatch.type.includes('Feedback (Up')) {
+        evaluatorGroups.Subordinate.push(u.internalId);
+      }
+    }
+  });
+
+  // 2. Calculate average score for each group using 60:40 rule
+  const groupScores: { [key in 'Superior' | 'Committee' | 'Subordinate']: number } = {
+    Superior: 0,
+    Committee: 0,
+    Subordinate: 0
+  };
+
+  const groupWeights = evaluatorWeightsTable[target.role] || { Superior: 0, Committee: 0, Subordinate: 0 };
+
+  (Object.keys(evaluatorGroups) as Array<'Superior' | 'Committee' | 'Subordinate'>).forEach(groupName => {
+    const evaluatorIds = evaluatorGroups[groupName];
+    if (evaluatorIds.length === 0) return;
+
+    let groupTotal = 0;
+    let actualEvaluatorsCount = 0;
+
+    evaluatorIds.forEach(eid => {
+      const myScoresForTarget = allRawScores[eid]?.[target.internalId];
+      if (!myScoresForTarget) return;
+
+      const part1Criteria = criteria.filter(c => c.category === 'PERF');
+      const part2Criteria = criteria.filter(c => c.category === 'CHAR' || c.category === 'EXEC');
+
+      const calculatePartScore = (partCriteria: Criteria[]) => {
+        if (partCriteria.length === 0) return 0;
+        let partSum = 0;
+        let partWeightSum = 0;
+        let filledCount = 0;
+        partCriteria.forEach(c => {
+          const score = myScoresForTarget[c.id];
+          if (score) {
+            partSum += (score / 4) * c.weight;
+            partWeightSum += c.weight;
+            filledCount++;
+          }
+        });
+        if (filledCount === 0 || partWeightSum === 0) return 0;
+        return (partSum / partWeightSum) * 100;
+      };
+
+      const p1 = calculatePartScore(part1Criteria);
+      const p2 = calculatePartScore(part2Criteria);
+
+      const finalEvalScore = (p1 * (categoryWeights.PERF || 0.6)) + (p2 * (categoryWeights.CHAR || categoryWeights.EXEC || 0.4));
+      groupTotal += finalEvalScore;
+      actualEvaluatorsCount++;
+    });
+
+    if (actualEvaluatorsCount > 0) {
+      groupScores[groupName] = groupTotal / actualEvaluatorsCount;
+    }
+  });
+
+  // 3. Apply Group Weights with normalization for missing groups
+  let totalWeightedScore = 0;
+  let activeWeightSum = 0;
+
+  (Object.keys(groupScores) as Array<'Superior' | 'Committee' | 'Subordinate'>).forEach(groupName => {
+    const weight = groupWeights[groupName];
+    if (weight > 0 && groupScores[groupName] > 0) {
+      totalWeightedScore += groupScores[groupName] * weight;
+      activeWeightSum += weight;
+    }
+  });
+
+  if (activeWeightSum === 0) return 0;
+  return totalWeightedScore / activeWeightSum;
+}
+
+export function calculateTotal(personInternalId: string, scores: any, criteria: Criteria[]): number {
   const personScores = scores[personInternalId] || {};
   let totalScore = 0;
   let totalWeight = 0;
@@ -128,6 +231,5 @@ export function calculateTotal(personInternalId: string, scores: ScoreData, crit
 
   if (totalWeight === 0) return 0;
 
-  // Normalize to 100
   return (totalScore / totalWeight) * 100;
 };

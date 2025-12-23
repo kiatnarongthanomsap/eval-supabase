@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
-import { calculateTotal, getScoreLevel, formatSalaryGroup, isExcluded, findTargets } from '@/lib/helpers';
-import { ROLES, INITIAL_CRITERIA } from '@/lib/constants';
+import { calculateTotal, calculateFinalWeightedScore, getScoreLevel, formatSalaryGroup, isExcluded, findTargets } from '@/lib/helpers';
+import { ROLES, INITIAL_CRITERIA, EVALUATOR_WEIGHTS, CATEGORY_WEIGHTS } from '@/lib/constants';
 import { ArrowLeft, Download, ArrowUpDown, ArrowUp, ArrowDown, Search, FileSpreadsheet, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,7 @@ const SummaryPage = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'finalScore', direction: 'descending' });
   const [selectedPerson, setSelectedPerson] = useState<FormattedData | null>(null);
   const [localScores, setLocalScores] = useState<any>({});
+  const [rawScores, setRawScores] = useState<any>({});
   const [localComments, setLocalComments] = useState<any>({});
   const [evaluatorCounts, setEvaluatorCounts] = useState<any>({});
   const [loading, setLoading] = useState(true);
@@ -59,9 +60,10 @@ const SummaryPage = () => {
     // Fetch global data for report specifically, keeping main app state clean
     const load = async () => {
       setLoading(true);
-      const data = await fetchReportData();
+      const data = await fetchReportData({ raw: true });
       if (data) {
         setLocalScores(data.scores || {});
+        setRawScores(data.all_scores || {});
         setLocalComments(data.comments || {});
         setEvaluatorCounts(data.evaluator_counts || {});
       }
@@ -75,9 +77,20 @@ const SummaryPage = () => {
       .filter(e => e.role !== ROLES.COMMITTEE && e.isActive)
       .map(target => {
         const personCriteria = getCriteriaForUser(target);
-        const rawTotal = calculateTotal(target.internalId, localScores, personCriteria);
+
+        // Use new detailed calculation logic
+        const weightedTotal = calculateFinalWeightedScore(
+          target,
+          rawScores,
+          allUsers,
+          personCriteria,
+          EVALUATOR_WEIGHTS,
+          CATEGORY_WEIGHTS,
+          exclusions
+        );
+
         const factor = deptAdjustment[target.dept] || 1.0;
-        const finalScore = useNormalization ? Math.min(100, rawTotal * factor) : rawTotal;
+        const finalScore = useNormalization ? Math.min(100, weightedTotal * factor) : weightedTotal;
         const levelInfo = getScoreLevel(finalScore);
         const comment = localComments[target.internalId] || '-';
         const isDone = personCriteria.length > 0 && personCriteria.every(c => localScores[target.internalId]?.[c.id]);
