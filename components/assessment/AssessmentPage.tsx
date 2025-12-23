@@ -255,7 +255,7 @@ const AssessmentPage = () => {
                     {isSendingEmail ? <Loader2 className="h-5 w-5 animate-spin text-blue-600" /> : <Mail className="h-5 w-5 text-gray-600 hover:text-blue-600" />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>ส่งสำเนาเข้าเมล</TooltipContent>
+                <TooltipContent>ส่งสำเนาเข้าเมลของฉัน</TooltipContent>
               </Tooltip>
             )}
             <Tooltip>

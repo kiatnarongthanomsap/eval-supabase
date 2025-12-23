@@ -190,7 +190,7 @@ const EvaluationTable = () => {
                           </td>
                         </tr>
                         {catCriteria.map(c => (
-                          <tr key={c.id} className="group hover:bg-indigo-50/30 transition-colors">
+                          <tr key={c.id} className="group hover:bg-indigo-100 transition-colors">
                             <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
                               <div className="flex justify-between items-start gap-2">
                                 <Tooltip>
