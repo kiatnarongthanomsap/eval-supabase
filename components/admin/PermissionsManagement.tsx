@@ -33,7 +33,7 @@ const PermissionsManagement = () => {
                 if (user.internalId === userId) {
                     const newPermissions = {
                         ...user.permissions,
-                        [permission]: !user.permissions?.[permission],
+                        [permission]: !user.permissions?.[permission as keyof typeof user.permissions],
                     };
                     return { ...user, permissions: newPermissions };
                 }

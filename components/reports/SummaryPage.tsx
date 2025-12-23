@@ -201,6 +201,20 @@ const SummaryPage = () => {
           bVal = ROLE_ORDER[itemB.role] || 99;
         }
 
+        if (sortKey === 'salaryGroup') {
+           const SALARY_GROUP_ORDER: { [key: string]: number } = {
+            'ไม่จัดกลุ่ม': 0,
+            'ไม่เกิน 20,000': 1,
+            'เกิน 20,000': 2,
+            'เกิน 30,000': 3,
+            'เกิน 40,000': 4,
+            'เกิน 50,000': 5,
+            'เกิน 100,000': 6
+          };
+          aVal = SALARY_GROUP_ORDER[itemA.salaryGroup] || 0;
+          bVal = SALARY_GROUP_ORDER[itemB.salaryGroup] || 0;
+        }
+
         if (typeof aVal === 'string' && typeof bVal === 'string') {
           return aVal.localeCompare(bVal);
         }

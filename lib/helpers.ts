@@ -54,9 +54,8 @@ export const getAvatar = (seed: string | number) => `https://picsum.photos/seed/
 // --- 4. Logic Functions ---
 export const isExcluded = (evaluatorOrgId: number, targetOrgId: number, exclusionsList: Exclusion[]): boolean => {
   return exclusionsList.some(ex =>
-    // @ts-ignore - Handle both potential cases if legacy data exists, but prioritize camelCase
-    (ex.evaluatorId === evaluatorOrgId || ex.evaluator_id === evaluatorOrgId) &&
-    (ex.targetId === targetOrgId || ex.target_id === targetOrgId)
+    (ex.evaluatorId === evaluatorOrgId || (ex as any).evaluator_id === evaluatorOrgId) &&
+    (ex.targetId === targetOrgId || (ex as any).target_id === targetOrgId)
   );
 };
 

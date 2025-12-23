@@ -1,0 +1,29 @@
+---
+config:
+  layout: dagre
+---
+flowchart TB
+ subgraph Formula["สูตรคำนวณคะแนนรวม"]
+    direction TB
+        Step1["Raw Score / 4"]
+        Step2["คูณด้วย Weight ของหัวข้อ"]
+        Step3["หารด้วย Total Weight ทั้งหมด"]
+        Step4["คูณ 100 = Total Score 0-100"]
+  end
+    Start(["เริ่มการประเมิน"]) --> Select_Target["เลือก Target User"]
+    Select_Target --> Check_Exclusion{"ตรวจสอบตาราง exclusions [5]"}
+    Check_Exclusion -- พบ (True) --> Disable["ปิดการประเมิน (Skip)"]
+    Check_Exclusion -- ไม่พบ (False) --> Check_Relation{"ตรวจสอบความสัมพันธ์ [9]"}
+    Check_Relation -- "หัวหน้า -> ลูกน้อง" --> Flow_Down["Downwards Evaluation"]
+    Check_Relation -- "ลูกน้อง -> หัวหน้า" --> Flow_Up["Upwards Evaluation (Feedback)"]
+    Check_Relation -- "กรรมการ -> ผู้บริหาร" --> Flow_Comm["Committee Evaluation"]
+    Flow_Down --> Load_Criteria["โหลดเกณฑ์ Perf/Char/Exec [5]"]
+    Flow_Comm --> Load_Criteria
+    Flow_Up --> Load_Feedback["โหลดแบบฟอร์ม Feedback"]
+    Load_Criteria --> Input_Score["User กรอกคะแนน Raw Score (1-4)"]
+    Input_Score --> Calc_Formula["เข้าสูตรคำนวณ [8]"]
+    Step1 --> Step2
+    Step2 --> Step3
+    Step3 --> Step4
+    Calc_Formula --> Display["แสดงผลกราฟและเกรด Real-time"]
+    Display --> Save_DB[("บันทึกลง Database")]

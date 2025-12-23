@@ -1,0 +1,42 @@
+sequenceDiagram
+    participant User as ผู้ใช้งาน (User)
+    participant FE as Frontend (Next.js)
+    participant BE as Backend (api.php)
+    participant DB as MySQL DB
+
+    Note over User, DB: 1. ขั้นตอนการเข้าสู่ระบบ (Authentication) [4, 7]
+    User->>FE: กรอกรหัสองค์กร (Org ID)
+    FE->>BE: POST ?action=login payload={org_id}
+    BE->>DB: SELECT * FROM users WHERE org_id = ...
+    DB-->>BE: ข้อมูลผู้ใช้ (User Object)
+    BE-->>FE: Return JSON (User Data / Error)
+
+    alt Login สำเร็จ
+        Note over User, DB: 2. การโหลดข้อมูลเริ่มต้น (Initialization) [4, 7]
+        FE->>BE: GET ?action=get_init_data
+        BE->>DB: Fetch users, criteria, evaluations, config
+        DB-->>BE: Return All Data sets
+        BE-->>FE: Return Full System State (JSON)
+        FE->>FE: สร้าง Org Chart และคำนวณ Role
+        FE-->>User: แสดง Dashboard รายชื่อผู้ที่ต้องประเมิน
+    else Login ล้มเหลว
+        FE-->>User: แสดงข้อความแจ้งเตือน Error
+    end
+
+    Note over User, DB: 3. ขั้นตอนการประเมิน (Evaluation Process) [4]
+    User->>FE: เลือกพนักงานที่ต้องการประเมิน (Target)
+    FE->>FE: ตรวจสอบ Role และความสัมพันธ์ (Manager/Staff)
+    
+    User->>FE: ให้คะแนน (Score 1-4) หรือ คอมเมนต์
+    FE->>FE: คำนวณคะแนนรวม Real-time (lib/helpers.ts)
+    
+    par บันทึกข้อมูล (Auto-Save) [7]
+        FE->>BE: POST ?action=update_score
+        BE->>DB: INSERT / UPDATE evaluations table
+    and
+        FE->>BE: POST ?action=update_comment
+        BE->>DB: INSERT / UPDATE comments table
+    end
+    
+    BE-->>FE: ยืนยันการบันทึก (Success)
+    FE-->>User: แสดงสถานะ "Saved" บนหน้าจอ

@@ -5,7 +5,7 @@ export const APP_VERSION = '2.0.0'; // Full Stable Version (SMTP + Dept Adjustme
 
 // --- 1. Constants & Configuration ---
 export const IS_DEBUG = true; // Toggle this to show/hide Dev/OTP toggles in Login Page
-export const API_BASE_URL = '/api/proxy';
+export const API_BASE_URL = '/kuscc-eval/api/proxy';
 
 export const RECOMMENDED_ADJUSTMENT: { [key: string]: number } = {
   'บัญชี': 1.00,
