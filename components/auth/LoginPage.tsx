@@ -10,15 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { APP_VERSION, ROLES, SHOW_DEV_UI } from '@/lib/constants';
+import { APP_VERSION, ROLES, IS_DEBUG } from '@/lib/constants';
 import { formatSalaryGroup } from '@/lib/helpers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 
 const LoginPage = () => {
   const { login, allUsers, isLoading } = useAppContext();
-  const [isDevMode, setIsDevMode] = useState(SHOW_DEV_UI);
-  const [isOtpMode, setIsOtpMode] = useState(!SHOW_DEV_UI); // Default to OTP if not in Dev UI mode
+  const [isDevMode, setIsDevMode] = useState(IS_DEBUG);
+
   const [mobileNumber, setMobileNumber] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -64,7 +64,7 @@ const LoginPage = () => {
     setOtpSent(false);
     setOtpCode('');
     setMobileNumber('');
-  }, [selectedUserId, isOtpMode]);
+  }, [selectedUserId, isDevMode]);
 
   const handleSendOtp = async (userMobile: string) => {
     if (!userMobile) {
@@ -121,7 +121,7 @@ const LoginPage = () => {
 
     if (!userToLogin) return;
 
-    if (isOtpMode) {
+    if (!isDevMode) {
       if (!otpSent) {
         // Step 1: Request OTP
         if (!userToLogin.mobile) {
@@ -155,20 +155,10 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-4 relative animate-fade-in">
       {/* OTP Toggle - Top Left (Hidden if not Dev UI) */}
-      {SHOW_DEV_UI && (
-        <Button
-          onClick={() => setIsOtpMode(!isOtpMode)}
-          variant={isOtpMode ? "default" : "outline"}
-          className={`absolute top-4 left-4 bg-white/80 backdrop-blur-sm shadow-sm transition-all gap-2 h-10 rounded-full ${isOtpMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'hover:bg-gray-100'}`}
-          title="Toggle OTP Login"
-        >
-          <Smartphone className="h-4 w-4" />
-          <span className="hidden sm:inline">{isOtpMode ? "OTP Login: ON" : "OTP Login: OFF"}</span>
-        </Button>
-      )}
+
 
       {/* Dev Mode Toggle - Top Right (Hidden if not Dev UI) */}
-      {SHOW_DEV_UI && (
+      {IS_DEBUG && (
         <Button
           onClick={() => setIsDevMode(!isDevMode)}
           variant={isDevMode ? "default" : "outline"}
@@ -235,7 +225,7 @@ const LoginPage = () => {
                 </Select>
               </div>
 
-              {isOtpMode && (
+              {!isDevMode && (
                 <div className="p-5 bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl border border-emerald-100 text-emerald-800 shadow-inner">
                   <div className="font-bold mb-2 flex items-center gap-2 text-emerald-700">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50"></span>
@@ -267,12 +257,12 @@ const LoginPage = () => {
 
               <Button
                 type="submit"
-                className={`w-full h-14 text-lg font-bold rounded-2xl shadow-lg transition-all transform active:scale-[0.98] ${isOtpMode
+                className={`w-full h-14 text-lg font-bold rounded-2xl shadow-lg transition-all transform active:scale-[0.98] ${!isDevMode
                   ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/30'
                   : 'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-700 shadow-primary/30'
                   }`}
                 size="lg"
-                disabled={!selectedUserId || isSendingOtp || (isOtpMode && otpSent && otpCode.length < 4)}
+                disabled={!selectedUserId || isSendingOtp || (!isDevMode && otpSent && otpCode.length < 4)}
               >
                 {isSendingOtp ? (
                   <span className="flex items-center gap-2">
@@ -280,7 +270,7 @@ const LoginPage = () => {
                     กำลังส่ง OTP...
                   </span>
                 ) : (
-                  (isOtpMode ? (otpSent ? "ยืนยันรหัส OTP" : "ขอรับรหัส OTP") : "เข้าสู่ระบบ")
+                  (!isDevMode ? (otpSent ? "ยืนยันรหัส OTP" : "ขอรับรหัส OTP") : "เข้าสู่ระบบ")
                 )}
                 {!isSendingOtp && <ChevronRight className="ml-2 h-6 w-6 opacity-80" />}
               </Button>
@@ -302,28 +292,48 @@ const LoginPage = () => {
               </div>
               <ScrollArea className="h-64 -mr-4 pr-4">
                 <div className="space-y-2 pb-2">
-                  {allUsers.filter(u => u.isActive).map(u => (
-                    <div
-                      key={u.internalId}
-                      onClick={() => login(u)}
-                      className="flex items-center gap-3 p-3 bg-white hover:bg-indigo-50 rounded-xl border border-gray-100 hover:border-indigo-200 cursor-pointer transition-all active:scale-[0.99] group shadow-sm hover:shadow-md"
-                    >
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-indigo-100 transition-colors">
-                        <Image src={u.img} fill className="object-cover" alt={u.name} />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <div className="text-sm font-bold truncate text-gray-800 group-hover:text-indigo-700 transition-colors">
-                          {u.name}
-                          {u.isAdmin && <span className="ml-2 text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-md font-bold tracking-wide align-middle">ADMIN</span>}
-                        </div>
-                        <div className="text-xs text-gray-500 group-hover:text-gray-700 truncate flex items-center gap-1.5 mt-0.5">
-                          <span className="bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200 text-[10px] font-medium group-hover:bg-indigo-50 group-hover:border-indigo-200 group-hover:text-indigo-700">{u.dept}</span>
-                          <span className="truncate">{u.position}</span>
-                        </div>
-                      </div>
+                  {allUsers
+                    .filter(u => u.isActive)
+                    .sort((a, b) => {
+                      // 1. Committee Last
+                      const isCommitteeA = a.role === ROLES.COMMITTEE;
+                      const isCommitteeB = b.role === ROLES.COMMITTEE;
+                      if (isCommitteeA && !isCommitteeB) return 1;
+                      if (!isCommitteeA && isCommitteeB) return -1;
 
-                    </div>
-                  ))}
+                      // 2. Role Priority (Manager > Asst > Head > Staff)
+                      const rolePriority = [ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
+                      const priorityA = rolePriority.indexOf(a.role);
+                      const priorityB = rolePriority.indexOf(b.role);
+                      if (priorityA !== -1 && priorityB !== -1 && priorityA !== priorityB) {
+                        return priorityA - priorityB;
+                      }
+
+                      // 3. Name (Thai Alphabetical)
+                      return a.name.localeCompare(b.name, 'th');
+                    })
+                    .map(u => (
+                      <div
+                        key={u.internalId}
+                        onClick={() => login(u)}
+                        className="flex items-center gap-3 p-3 bg-white hover:bg-indigo-50 rounded-xl border border-gray-100 hover:border-indigo-200 cursor-pointer transition-all active:scale-[0.99] group shadow-sm hover:shadow-md"
+                      >
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-indigo-100 transition-colors">
+                          <Image src={u.img} fill className="object-cover" alt={u.name} />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="text-sm font-bold truncate text-gray-800 group-hover:text-indigo-700 transition-colors">
+                            {u.name}
+                            {u.isAdmin && <span className="ml-2 text-[9px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-md font-bold tracking-wide align-middle">ADMIN</span>}
+                          </div>
+                          <div className="text-xs text-gray-500 group-hover:text-gray-700 truncate flex items-center gap-1.5 mt-0.5">
+                            <span className="bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200 text-[10px] font-medium group-hover:bg-indigo-50 group-hover:border-indigo-200 group-hover:text-indigo-700">{u.dept}</span>
+                            <span className="truncate">{u.position}</span>
+                          </div>
+                        </div>
+
+                      </div>
+                    ))}
                 </div>
               </ScrollArea>
             </div>

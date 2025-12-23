@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
 import { ROLES } from '@/lib/constants';
 import { findTargets } from '@/lib/helpers';
-import { ArrowLeft, PieChart, TrendingUp, Search, Building, Users } from 'lucide-react';
+import { ArrowLeft, Footprints, TrendingUp, Search, Building, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,8 +24,12 @@ const ProgressPage = () => {
             setLoading(true);
             // Fetch RAW data: { all_scores: { evaluatorId: { targetId: { criteriaId: score } } } }
             const data = await fetchReportData({ raw: true });
+            console.log("DEBUG: fetchReportData result:", data ? Object.keys(data) : "null");
             if (data && data.all_scores) {
+                console.log("DEBUG: all_scores sample keys:", Object.keys(data.all_scores).slice(0, 5));
                 setRawScores(data.all_scores);
+            } else {
+                console.warn("DEBUG: No all_scores found in response");
             }
             setLoading(false);
         };
@@ -34,9 +38,12 @@ const ProgressPage = () => {
 
     // 1. Calculate Evaluator Progress (Perspective: Who has finished their job?)
     const evaluatorProgressData = useMemo(() => {
+        console.log("DEBUG: Starting evaluatorProgressData calc. AllUsers count:", allUsers.length);
+
         return allUsers
             .filter(u => u.isActive && u.role !== ROLES.COMMITTEE) // Filter active non-committee users
-            .map(evaluator => {
+            .map((evaluator, idx) => {
+                if (idx < 3) console.log(`DEBUG: Processing user ${evaluator.name} (ID: ${evaluator.internalId})`);
                 // Find who this evaluator is supposed to evaluate
                 const targets = findTargets(evaluator, allUsers, exclusions);
 
@@ -62,7 +69,19 @@ const ProgressPage = () => {
                     };
                 }
 
-                const myScores = rawScores[evaluator.internalId] || {};
+                // Debug matching
+                const evaluatorKey = String(evaluator.internalId);
+                const myScores = rawScores[evaluatorKey] || rawScores[Number(evaluator.internalId)] || {};
+
+                if (evaluatorKey === "19" || evaluatorKey === "21") { // Debug specific users (Kiatnarong/Admin)
+                    console.log(`Debug ${evaluator.name} (${evaluatorKey}):`, {
+                        rawScoresKeys: Object.keys(rawScores).slice(0, 5),
+                        myScoresSize: Object.keys(myScores).length,
+                        foundMyScores: !!rawScores[evaluatorKey],
+                        evaluatorIdType: typeof evaluator.internalId,
+                        targetsCount: validTargets.length
+                    });
+                }
 
                 validTargets.forEach(target => {
                     const criteria = getCriteriaForUser(target);
@@ -77,7 +96,8 @@ const ProgressPage = () => {
                     totalCriteriaCount += targetTotal;
 
                     // Check criteria completion
-                    const targetScores = myScores[target.internalId] || {};
+                    const targetKey = String(target.internalId);
+                    const targetScores = myScores[targetKey] || {};
                     let targetScoredThisPerson = 0;
 
                     criteria.forEach(c => {
@@ -139,7 +159,16 @@ const ProgressPage = () => {
         return evaluatorProgressData
             .filter(u => u.hasDuty) // Only show people who actually have to evaluate someone
             .filter(u => u.name.toLowerCase().includes(filterName.toLowerCase()) || u.dept.toLowerCase().includes(filterName.toLowerCase()))
-            .sort((a, b) => a.progress - b.progress); // Show incomplete first
+            .sort((a, b) => {
+                const rolePriority = [ROLES.COMMITTEE, ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
+                const priorityA = rolePriority.indexOf(a.role);
+                const priorityB = rolePriority.indexOf(b.role);
+
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+                return a.name.localeCompare(b.name, 'th');
+            });
     }, [evaluatorProgressData, filterName]);
 
     const totalProgress = useMemo(() => {
@@ -155,7 +184,7 @@ const ProgressPage = () => {
             <header className="bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex items-center gap-4 sticky top-0 z-20 border-b border-white/20">
                 <Button onClick={goBack} variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100"><ArrowLeft className="h-5 w-5 text-gray-600" /></Button>
                 <h1 className="text-xl font-bold font-headline text-gray-800 tracking-tight flex items-center gap-2">
-                    <span className="bg-purple-100 text-purple-600 p-2 rounded-xl"><PieChart className="w-5 h-5" /></span>
+                    <span className="bg-purple-100 text-purple-600 p-2 rounded-xl"><Footprints className="w-5 h-5" /></span>
                     ติดตามความคืบหน้า (Monitoring)
                 </h1>
                 <div className="ml-auto flex items-center gap-3">

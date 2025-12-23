@@ -15,6 +15,17 @@ const IndividualEvaluation = () => {
   const { currentPerson, goBack, scores, updateScore, getCriteriaForUser, comments, updateComment, systemConfig, user } = useAppContext();
   const { toast } = useToast();
 
+  // Local state for scores to support "Save only if complete" logic
+  const [localScores, setLocalScores] = React.useState<{ [key: string]: number }>({});
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  // Initialize local scores from global scores on mount
+  React.useEffect(() => {
+    if (currentPerson && scores[currentPerson.internalId]) {
+      setLocalScores(scores[currentPerson.internalId]);
+    }
+  }, [currentPerson, scores]);
+
   const personCriteria = useMemo(() => {
     if (!currentPerson) return [];
     return getCriteriaForUser(currentPerson);
@@ -27,10 +38,9 @@ const IndividualEvaluation = () => {
 
   if (!currentPerson) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validation: Check if all criteria have been scored
-    const currentScores = scores[currentPerson.internalId] || {};
-    const missingCriteria = personCriteria.filter(c => !currentScores[c.id]);
+    const missingCriteria = personCriteria.filter(c => !localScores[c.id]);
 
     if (missingCriteria.length > 0) {
       toast({
@@ -41,8 +51,26 @@ const IndividualEvaluation = () => {
       return;
     }
 
-    toast({ title: 'บันทึกการประเมินแล้ว', description: `การประเมินสำหรับ ${currentPerson.name} ถูกบันทึกแล้ว` });
-    goBack();
+    setIsSaving(true);
+    try {
+      // Save all scores to server
+      const promises = Object.entries(localScores).map(([criteriaId, score]) =>
+        updateScore(currentPerson.internalId, criteriaId, score)
+      );
+
+      await Promise.all(promises);
+
+      toast({ title: 'บันทึกการประเมินแล้ว', description: `การประเมินสำหรับ ${currentPerson.name} ถูกบันทึกแล้ว` });
+      goBack();
+    } catch (error) {
+      toast({
+        title: "บันทึกไม่สำเร็จ",
+        description: "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getScoreButtonClass = (score: number, isSelected: boolean) => {
@@ -112,12 +140,12 @@ const IndividualEvaluation = () => {
                   {[1, 2, 3, 4].map(s => (
                     <Button
                       key={s}
-                      onClick={() => updateScore(currentPerson.internalId, c.id, s)}
+                      onClick={() => setLocalScores(prev => ({ ...prev, [c.id]: s }))}
                       variant="outline"
-                      disabled={isOutOfTime}
+                      disabled={isOutOfTime || isSaving}
                       className={cn(
                         'py-6 text-xl font-bold transition-all duration-200 h-14 rounded-2xl border-2',
-                        getScoreButtonClass(s, scores[currentPerson.internalId]?.[c.id] === s)
+                        getScoreButtonClass(s, localScores?.[c.id] === s)
                       )}
                     >
                       {s}
@@ -150,8 +178,8 @@ const IndividualEvaluation = () => {
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg p-4 border-t border-gray-100 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-40">
-        <Button onClick={handleSave} size="lg" className="w-full max-w-2xl mx-auto flex gap-2 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-indigo-200 bg-gradient-to-r from-primary to-indigo-600 hover:scale-[1.01] active:scale-[0.98] transition-all" disabled={isOutOfTime}>
-          <Save className="h-5 w-5" /> บันทึกการประเมิน
+        <Button onClick={handleSave} size="lg" className="w-full max-w-2xl mx-auto flex gap-2 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-indigo-200 bg-gradient-to-r from-primary to-indigo-600 hover:scale-[1.01] active:scale-[0.98] transition-all" disabled={isOutOfTime || isSaving}>
+          {isSaving ? <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/80"></span> : <Save className="h-5 w-5" />} บันทึกการประเมิน
         </Button>
       </footer>
     </div>

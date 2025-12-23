@@ -5,7 +5,7 @@ import { useAppContext } from '@/components/layout/AppProvider';
 import { findTargets, formatSalaryGroup } from '@/lib/helpers';
 import { ROLES, ROLE_LABELS } from '@/lib/constants';
 import type { Target, Role } from '@/lib/types';
-import { CheckCircle, ChevronRight, DollarSign, FileText, LogOut, Settings, UserCircle, Users, AlertTriangle, PieChart } from 'lucide-react';
+import { CheckCircle, ChevronRight, DollarSign, FileText, LogOut, Settings, UserCircle, Users, AlertTriangle, Footprints } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -216,7 +216,7 @@ const AssessmentPage = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" onClick={() => setView('progress')} className="h-10 w-10 rounded-full hover:bg-purple-50 transition-all hover:scale-105 hover:shadow-md">
-                      <PieChart className="h-5 w-5 text-gray-600 hover:text-purple-600" />
+                      <Footprints className="h-5 w-5 text-gray-600 hover:text-purple-600" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent><p>ความคืบหน้า</p></TooltipContent>

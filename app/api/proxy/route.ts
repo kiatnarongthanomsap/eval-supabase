@@ -4,10 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const API_TARGET_URL = 'https://apps2.coop.ku.ac.th/hrpro_api/api.php';
 
 export async function GET(request: NextRequest) {
-    const searchParams = request.nextUrl.searchParams;
-    const action = searchParams.get('action');
-
-    const targetUrl = `${API_TARGET_URL}?action=${action || ''}`;
+    const queryString = request.nextUrl.searchParams.toString();
+    const targetUrl = `${API_TARGET_URL}?${queryString}`;
 
     try {
         const res = await fetch(targetUrl, {
@@ -36,9 +34,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-    const searchParams = request.nextUrl.searchParams;
-    const action = searchParams.get('action');
-    const targetUrl = `${API_TARGET_URL}?action=${action || ''}`;
+    const queryString = request.nextUrl.searchParams.toString();
+    const targetUrl = `${API_TARGET_URL}?${queryString}`;
 
     try {
         const body = await request.json();

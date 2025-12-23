@@ -15,13 +15,9 @@ export async function GET(request: Request) {
         rejectUnauthorized: false
     });
 
-    // Updated configuration based on user's working example
-    const apiUrl = 'https://apps3.coop.ku.ac.th/service2020/service1.svc/RequestOTP';
-    const app_name = 'postman';
-    const time = '300';
-    const format = '{{otp}} คือรหัส OTP ของ {{appName}} (Ref: {{ref}}) ใช้ได้ถึง {{time}}]';
-    const length = '4';
-    const cookie = 'ASP.NET_SessionId=jg5g5rxp2e5gv0ua2eviyigc';
+    // Updated configuration based on user's working example (2024-12-23)
+    const apiUrl = 'https://apps3.coop.ku.ac.th/php/sms/otp.php';
+    const msg = 'OTP for Login'; // Default message
 
     const config = {
         method: 'get',
@@ -29,13 +25,7 @@ export async function GET(request: Request) {
         url: apiUrl,
         params: {
             mobile_no: mobile_no,
-            app_name: app_name,
-            time: time,
-            format: format,
-            length: length
-        },
-        headers: {
-            'Cookie': cookie
+            msg: msg
         },
         httpsAgent: httpsAgent
     };

@@ -36,14 +36,14 @@ export const getScoreLevel = (score: number) => {
 };
 
 export const downloadCSV = (filename: string, content: string) => {
-    const BOM = "\uFEFF";
-    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(BOM + content);
-    const link = document.createElement("a");
-    link.setAttribute("href", csvContent);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const BOM = "\uFEFF";
+  const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(BOM + content);
+  const link = document.createElement("a");
+  link.setAttribute("href", csvContent);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 let internalIdCounter = 1;
@@ -54,7 +54,9 @@ export const getAvatar = (seed: string | number) => `https://picsum.photos/seed/
 // --- 4. Logic Functions ---
 export const isExcluded = (evaluatorOrgId: number, targetOrgId: number, exclusionsList: Exclusion[]): boolean => {
   return exclusionsList.some(ex =>
-    ex.evaluator_id === evaluatorOrgId && ex.target_id === targetOrgId
+    // @ts-ignore - Handle both potential cases if legacy data exists, but prioritize camelCase
+    (ex.evaluatorId === evaluatorOrgId || ex.evaluator_id === evaluatorOrgId) &&
+    (ex.targetId === targetOrgId || ex.target_id === targetOrgId)
   );
 };
 
@@ -109,23 +111,23 @@ export const findTargets = (currentUser: User | null, usersList: User[], exclusi
 };
 
 export function calculateTotal(personInternalId: string, scores: ScoreData, criteria: Criteria[]): number {
-    const personScores = scores[personInternalId] || {};
-    let totalScore = 0;
-    let totalWeight = 0;
-    let allCriteriaScored = criteria.length > 0 && criteria.every(c => personScores[c.id] > 0);
+  const personScores = scores[personInternalId] || {};
+  let totalScore = 0;
+  let totalWeight = 0;
+  let allCriteriaScored = criteria.length > 0 && criteria.every(c => personScores[c.id] > 0);
 
-    if (!allCriteriaScored) return 0;
+  if (!allCriteriaScored) return 0;
 
-    criteria.forEach(c => {
-        const score = personScores[c.id];
-        if (score !== undefined && score > 0) {
-            totalScore += (score / 4) * c.weight;
-        }
-        totalWeight += c.weight;
-    });
+  criteria.forEach(c => {
+    const score = personScores[c.id];
+    if (score !== undefined && score > 0) {
+      totalScore += (score / 4) * c.weight;
+    }
+    totalWeight += c.weight;
+  });
 
-    if (totalWeight === 0) return 0;
-    
-    // Normalize to 100
-    return (totalScore / totalWeight) * 100;
+  if (totalWeight === 0) return 0;
+
+  // Normalize to 100
+  return (totalScore / totalWeight) * 100;
 };
