@@ -90,7 +90,7 @@ export const findTargets = (currentUser: User | null, usersList: User[], exclusi
 
   if (currentUser.role === ROLES.COMMITTEE) {
     const eligibleTargets = usersList.filter(u =>
-      [ROLES.MANAGER, ROLES.ASST, ROLES.HEAD].includes(u.role) && u.orgId !== currentUser.orgId && u.isActive
+      [ROLES.MANAGER, ROLES.ASST].includes(u.role) && u.orgId !== currentUser.orgId && u.isActive
     );
     eligibleTargets.forEach(u => {
       targets.push({ ...u, type: 'Performance (Committee)' });

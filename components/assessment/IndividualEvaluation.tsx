@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
 import { ArrowLeft, Save, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { getAiSuggestions } from '@/app/actions';
+import { CRITERIA_CATEGORIES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +33,16 @@ const IndividualEvaluation = () => {
     if (!currentPerson) return [];
     return getCriteriaForUser(currentPerson);
   }, [currentPerson, getCriteriaForUser]);
+
+  const categorizedCriteria = useMemo(() => {
+    const grouped: { [key: string]: typeof personCriteria } = {};
+    CRITERIA_CATEGORIES.forEach(cat => grouped[cat.id] = []);
+    personCriteria.forEach(c => {
+      const categoryKey = c.category as string;
+      if (grouped[categoryKey]) grouped[categoryKey].push(c);
+    });
+    return grouped;
+  }, [personCriteria]);
 
   const isOutOfTime = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -120,43 +131,56 @@ const IndividualEvaluation = () => {
           </Card>
         )}
         <TooltipProvider>
-          {personCriteria.map((c, index) => (
-            <Card key={c.id} className="shadow-lg shadow-indigo-100 border-0 rounded-3xl overflow-hidden bg-white/80 backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
-              <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                <div className="flex justify-between items-start">
-                  <div className="flex gap-3">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mt-0.5">{index + 1}</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <CardTitle className="text-base font-bold text-gray-800 cursor-help leading-snug">{c.text}</CardTitle>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs p-3 bg-gray-900 text-white border-0"><p>{c.description}</p></TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-md">WT: {c.weight}</span>
+          {CRITERIA_CATEGORIES.map(cat => {
+            const catCriteria = categorizedCriteria[cat.id];
+            if (!catCriteria || catCriteria.length === 0) return null;
+
+            return (
+              <div key={cat.id} className="space-y-4">
+                <div className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-2", cat.color)}>
+                  <span className="w-2 h-2 rounded-full bg-current opacity-50"></span>
+                  {cat.name}
                 </div>
-              </CardHeader>
-              <CardContent className="pt-4 px-4 pb-5">
-                <p className="text-xs text-gray-500 mb-4 px-1">{c.description}</p>
-                <div className="grid grid-cols-4 gap-3">
-                  {[1, 2, 3, 4].map(s => (
-                    <Button
-                      key={s}
-                      onClick={() => setLocalScores(prev => ({ ...prev, [c.id]: s }))}
-                      variant="outline"
-                      disabled={isOutOfTime || isSaving}
-                      className={cn(
-                        'py-6 text-xl font-bold transition-all duration-200 h-14 rounded-2xl border-2',
-                        getScoreButtonClass(s, localScores?.[c.id] === s)
-                      )}
-                    >
-                      {s}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                {catCriteria.map((c, idx) => (
+                  <Card key={c.id} className="shadow-lg shadow-indigo-100 border-0 rounded-3xl overflow-hidden bg-white/80 backdrop-blur-sm animate-fade-in-up">
+                    <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+                      <div className="flex justify-between items-start">
+                        <div className="flex gap-3">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mt-0.5">{personCriteria.indexOf(c) + 1}</span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <CardTitle className="text-base font-bold text-gray-800 cursor-help leading-snug">{c.text}</CardTitle>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-xs p-3 bg-gray-900 text-white border-0"><p>{c.description}</p></TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-md">WT: {c.weight}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4 px-4 pb-5">
+                      <p className="text-xs text-gray-500 mb-4 px-1">{c.description}</p>
+                      <div className="grid grid-cols-4 gap-3">
+                        {[1, 2, 3, 4].map(s => (
+                          <Button
+                            key={s}
+                            onClick={() => setLocalScores(prev => ({ ...prev, [c.id]: s }))}
+                            variant="outline"
+                            disabled={isOutOfTime || isSaving}
+                            className={cn(
+                              'py-6 text-xl font-bold transition-all duration-200 h-14 rounded-2xl border-2',
+                              getScoreButtonClass(s, localScores?.[c.id] === s)
+                            )}
+                          >
+                            {s}
+                          </Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            );
+          })}
         </TooltipProvider>
 
         <Card className="shadow-lg shadow-indigo-100 border-0 rounded-3xl overflow-hidden bg-white">
@@ -165,6 +189,7 @@ const IndividualEvaluation = () => {
               <span className="w-1 h-5 bg-primary rounded-full"></span>
               ความคิดเห็นโดยรวม
             </CardTitle>
+            {/* 
             <Button
               variant="outline"
               size="sm"
@@ -222,6 +247,7 @@ const IndividualEvaluation = () => {
               {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
               ขอคำแนะนำจาก AI
             </Button>
+            */}
           </CardHeader>
           <CardContent className="p-4 pt-1">
 

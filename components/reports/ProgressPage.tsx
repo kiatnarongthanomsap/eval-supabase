@@ -22,6 +22,7 @@ const ProgressPage = () => {
     const [rawScores, setRawScores] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [filterName, setFilterName] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'done' | 'pending'>('all');
 
     // SMS State
     const [isSmsOpen, setIsSmsOpen] = useState(false);
@@ -53,7 +54,7 @@ const ProgressPage = () => {
         console.log("DEBUG: Starting evaluatorProgressData calc. AllUsers count:", allUsers.length);
 
         return allUsers
-            .filter(u => u.isActive && u.role !== ROLES.COMMITTEE) // Filter active non-committee users
+            .filter(u => u.isActive) // Filter only active users (including Committee)
             .map((evaluator, idx) => {
                 if (idx < 3) console.log(`DEBUG: Processing user ${evaluator.name} (ID: ${evaluator.internalId})`);
                 // Find who this evaluator is supposed to evaluate
@@ -169,10 +170,24 @@ const ProgressPage = () => {
         })).sort((a, b) => b.progress - a.progress);
     }, [evaluatorProgressData]);
 
+    const stats = useMemo(() => {
+        const active = evaluatorProgressData.filter(u => u.hasDuty);
+        return {
+            all: active.length,
+            done: active.filter(u => u.isDone).length,
+            pending: active.filter(u => !u.isDone).length
+        };
+    }, [evaluatorProgressData]);
+
     // Filtered Users (Evaluators)
     const filteredEvaluators = useMemo(() => {
         return evaluatorProgressData
             .filter(u => u.hasDuty) // Only show people who actually have to evaluate someone
+            .filter(u => {
+                if (statusFilter === 'done') return u.isDone;
+                if (statusFilter === 'pending') return !u.isDone;
+                return true;
+            })
             .filter(u => u.name.toLowerCase().includes(filterName.toLowerCase()) || u.dept.toLowerCase().includes(filterName.toLowerCase()))
             .sort((a, b) => {
                 const rolePriority = [ROLES.COMMITTEE, ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
@@ -184,7 +199,7 @@ const ProgressPage = () => {
                 }
                 return a.name.localeCompare(b.name, 'th');
             });
-    }, [evaluatorProgressData, filterName]);
+    }, [evaluatorProgressData, filterName, statusFilter]);
 
     // List of users who haven't finished (for SMS)
     const incompleteUsers = useMemo(() => {
@@ -327,14 +342,36 @@ const ProgressPage = () => {
                             <Users className="w-5 h-5 text-indigo-600" />
                             <h2 className="text-lg font-bold text-gray-800">สถานะผู้ประเมิน (Evaluator Status)</h2>
                         </div>
-                        <div className="relative w-full md:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                                placeholder="ค้นหาผู้ประเมิน..."
-                                className="pl-10 h-10 rounded-full bg-white shadow-sm border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
-                                value={filterName}
-                                onChange={e => setFilterName(e.target.value)}
-                            />
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+                            <div className="flex p-1 bg-white ring-1 ring-gray-200 rounded-2xl shadow-sm">
+                                <button
+                                    onClick={() => setStatusFilter('all')}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    ทั้งหมด <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'all' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.all}</span>
+                                </button>
+                                <button
+                                    onClick={() => setStatusFilter('done')}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'done' ? 'bg-green-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    ครบ <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'done' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.done}</span>
+                                </button>
+                                <button
+                                    onClick={() => setStatusFilter('pending')}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'pending' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    ไม่ครบ <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'pending' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.pending}</span>
+                                </button>
+                            </div>
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="ค้นหาผู้ประเมิน..."
+                                    className="pl-10 h-10 rounded-full bg-white shadow-sm border-gray-200 focus:border-indigo-300 focus:ring-indigo-100"
+                                    value={filterName}
+                                    onChange={e => setFilterName(e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
 

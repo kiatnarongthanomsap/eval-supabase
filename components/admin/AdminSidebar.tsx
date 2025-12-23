@@ -18,7 +18,7 @@ const navItems = [
   { id: 'criteria', label: 'หลักเกณฑ์', icon: FileText, adminOnly: true, allowReportViewer: true },
   { id: 'org', label: 'โครงสร้างองค์กร', icon: Layers, adminOnly: false },
   { id: 'adjustments', label: 'ปรับฐานคะแนน', icon: SlidersHorizontal, adminOnly: false },
-  { id: 'ai-tool', label: 'ข้อเสนอแนะ AI', icon: Zap, adminOnly: false },
+  // { id: 'ai-tool', label: 'ข้อเสนอแนะ AI', icon: Zap, adminOnly: false },
   { id: 'permissions', label: 'จัดการสิทธิ์', icon: Gavel, adminOnly: true },
 ];
 
