@@ -4,22 +4,34 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
 import { ROLES } from '@/lib/constants';
 import { findTargets } from '@/lib/helpers';
-import { ArrowLeft, Footprints, TrendingUp, Search, Building, Users } from 'lucide-react';
+import { ArrowLeft, Footprints, TrendingUp, Search, Building, Users, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 import type { User, Target } from '@/lib/types';
 
 const ProgressPage = () => {
     const { goBack, allUsers, fetchReportData, getCriteriaForUser, exclusions } = useAppContext();
+    const { toast } = useToast();
     const [rawScores, setRawScores] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [filterName, setFilterName] = useState('');
 
+    // SMS State
+    const [isSmsOpen, setIsSmsOpen] = useState(false);
+    const [smsMessage, setSmsMessage] = useState("กรุณาดำเนินการประเมินให้เรียบร้อย ภายในกำหนด");
+    const [isSendingSms, setIsSendingSms] = useState(false);
+
     React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setSmsMessage(prev => `${prev}\n\n${window.location.origin}`);
+        }
         const load = async () => {
             setLoading(true);
             // Fetch RAW data: { all_scores: { evaluatorId: { targetId: { criteriaId: score } } } }
@@ -113,7 +125,7 @@ const ProgressPage = () => {
                     }
                 });
 
-                const progress = totalCriteriaCount > 0 ? Math.round((completedCriteriaCount / totalCriteriaCount) * 100) : 0;
+                const progress = totalTargets > 0 ? Math.round((peopleCompletedCount / totalTargets) * 100) : 0;
 
                 return {
                     ...evaluator,
@@ -130,17 +142,18 @@ const ProgressPage = () => {
 
     // 2. Calculate Line (Dept) Progress - Based on Evaluators in that Dept
     const deptProgressData = useMemo(() => {
-        const deptMap: { [key: string]: { totalEvaluators: number; completedEvaluators: number } } = {};
+        const deptMap: { [key: string]: { totalTargets: number; completedTargets: number; totalEvaluators: number; completedEvaluators: number } } = {};
 
         evaluatorProgressData.forEach(u => {
-            if (!u.hasDuty) return; // Only count those who have work to do? Or count everyone?
-            // Usually "Department Progress" means "Did everyone in this dept finish their job?"
-            // So we count everyone who has a duty.
+            if (!u.hasDuty) return;
 
             if (!deptMap[u.dept]) {
-                deptMap[u.dept] = { totalEvaluators: 0, completedEvaluators: 0 };
+                deptMap[u.dept] = { totalTargets: 0, completedTargets: 0, totalEvaluators: 0, completedEvaluators: 0 };
             }
             deptMap[u.dept].totalEvaluators += 1;
+            deptMap[u.dept].totalTargets += u.peopleTotal;
+            deptMap[u.dept].completedTargets += u.peopleCompleted;
+
             if (u.isDone) {
                 deptMap[u.dept].completedEvaluators += 1;
             }
@@ -148,9 +161,11 @@ const ProgressPage = () => {
 
         return Object.entries(deptMap).map(([dept, data]) => ({
             dept,
-            progress: data.totalEvaluators > 0 ? Math.round((data.completedEvaluators / data.totalEvaluators) * 100) : 0,
+            progress: data.totalTargets > 0 ? Math.round((data.completedTargets / data.totalTargets) * 100) : 0,
             completed: data.completedEvaluators,
-            total: data.totalEvaluators
+            total: data.totalEvaluators,
+            targetsCompleted: data.completedTargets,
+            targetsTotal: data.totalTargets
         })).sort((a, b) => b.progress - a.progress);
     }, [evaluatorProgressData]);
 
@@ -171,11 +186,50 @@ const ProgressPage = () => {
             });
     }, [evaluatorProgressData, filterName]);
 
+    // List of users who haven't finished (for SMS)
+    const incompleteUsers = useMemo(() => {
+        return filteredEvaluators.filter(u => !u.isDone && u.hasDuty && u.mobile);
+    }, [filteredEvaluators]);
+
+    const handleSendSms = async () => {
+        setIsSendingSms(true);
+        try {
+            let successCount = 0;
+            // Send in batches or parallel? Parallel is properly fine for small numbers, but maybe limit concurrency if needed.
+            // Using Promise.all for simplicity.
+            const promises = incompleteUsers.map(async (u) => {
+                if (!u.mobile) return;
+                try {
+                    const res = await fetch(`/api/otp/request?mobile_no=${u.mobile}&msg=${encodeURIComponent(smsMessage)}`);
+                    if (res.ok) successCount++;
+                } catch (e) {
+                    console.error(`Failed to send SMS to ${u.name}`, e);
+                }
+            });
+
+            await Promise.all(promises);
+
+            toast({
+                title: "ส่งข้อความสำเร็จ",
+                description: `ส่งข้อความแจ้งเตือนเรียบร้อยแล้ว (${successCount}/${incompleteUsers.length} คน)`
+            });
+            setIsSmsOpen(false);
+        } catch (error) {
+            console.error("SMS Error:", error);
+            toast({ title: "เกิดข้อผิดพลาด", description: "ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง", variant: "destructive" });
+        } finally {
+            setIsSendingSms(false);
+        }
+    };
+
     const totalProgress = useMemo(() => {
         const activeEvaluators = evaluatorProgressData.filter(u => u.hasDuty);
         if (activeEvaluators.length === 0) return 0;
-        const done = activeEvaluators.filter(u => u.isDone).length;
-        return Math.round((done / activeEvaluators.length) * 100);
+
+        const totalPeopleTargets = activeEvaluators.reduce((sum, u) => sum + u.peopleTotal, 0);
+        const totalPeopleCompleted = activeEvaluators.reduce((sum, u) => sum + u.peopleCompleted, 0);
+
+        return totalPeopleTargets > 0 ? Math.round((totalPeopleCompleted / totalPeopleTargets) * 100) : 0;
     }, [evaluatorProgressData]);
 
     return (
@@ -188,6 +242,16 @@ const ProgressPage = () => {
                     ติดตามความคืบหน้า (Monitoring)
                 </h1>
                 <div className="ml-auto flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 hidden md:flex border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                        onClick={() => setIsSmsOpen(true)}
+                        disabled={incompleteUsers.length === 0}
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        แจ้งเตือน SMS ({incompleteUsers.length})
+                    </Button>
                     <div className="text-right hidden md:block">
                         <div className="text-sm font-bold text-gray-700">ภาพรวมทั้งองค์กร</div>
                         <div className="text-xs text-gray-500">{totalProgress}% ผู้ประเมินเสร็จสิ้น</div>
@@ -197,6 +261,33 @@ const ProgressPage = () => {
                     </div>
                 </div>
             </header>
+
+            <Dialog open={isSmsOpen} onOpenChange={setIsSmsOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>ส่ง SMS แจ้งเตือน</DialogTitle>
+                        <DialogDescription>
+                            ส่งข้อความแจ้งเตือนไปยังผู้ที่ยังประเมินไม่เสร็จสิ้นจำนวน {incompleteUsers.length} คน
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <label className="text-sm font-medium mb-2 block">ข้อความ:</label>
+                        <Textarea
+                            value={smsMessage}
+                            onChange={(e) => setSmsMessage(e.target.value)}
+                            placeholder="ระบุข้อความ..."
+                            className="min-h-[100px]"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSmsOpen(false)} disabled={isSendingSms}>ยกเลิก</Button>
+                        <Button onClick={handleSendSms} disabled={isSendingSms || !smsMessage.trim()}>
+                            {isSendingSms ? <span className="animate-spin mr-2">⏳</span> : <MessageSquare className="w-4 h-4 mr-2" />}
+                            ส่งข้อความ
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <main className="p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8">
 
@@ -211,14 +302,14 @@ const ProgressPage = () => {
                         {deptProgressData.map((dept) => (
                             <Card key={dept.dept} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 ring-1 ring-gray-100 overflow-hidden group">
                                 <CardHeader className="pb-2 bg-gradient-to-br from-white to-gray-50/50">
-                                    <div className="flex justifying-between items-start w-full">
+                                    <div className="flex justify-between items-start w-full">
                                         <CardTitle className="text-base font-bold text-gray-800 line-clamp-1 flex-1" title={dept.dept}>{dept.dept}</CardTitle>
                                         <Badge variant={dept.progress === 100 ? "default" : "secondary"} className={dept.progress === 100 ? "bg-green-500 hover:bg-green-600" : ""}>
                                             {dept.progress}%
                                         </Badge>
                                     </div>
                                     <CardDescription className="text-xs">
-                                        เสร็จสิ้น {dept.completed} จาก {dept.total} คน
+                                        เสร็จสิ้น {dept.targetsCompleted} จาก {dept.targetsTotal} คน
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-4">
@@ -284,7 +375,7 @@ const ProgressPage = () => {
 
                                             <div className="flex items-center gap-2">
                                                 <Progress value={user.progress} className={`h-1.5 flex-1 ${user.isDone ? "[&>div]:bg-green-500 bg-green-100" : "[&>div]:bg-purple-500 bg-purple-50"}`} />
-                                                <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{user.completedCount}/{user.totalCount} ข้อ</span>
+                                                <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{user.peopleCompleted}/{user.peopleTotal} คน</span>
                                             </div>
                                         </div>
                                     </div>

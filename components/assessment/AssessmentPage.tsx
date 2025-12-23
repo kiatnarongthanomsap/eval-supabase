@@ -153,20 +153,31 @@ const AssessmentPage = () => {
     return { groupedTargets: groups, sortedGroupEntries: sortedEntries };
   }, [allTargets, filterType]);
 
-  const { progressPercent, filledScores, totalPossibleScores } = useMemo(() => {
-    let totalScores = 0;
-    let filled = 0;
+  const { progressPercent, completedPeople } = useMemo(() => {
+    let completed = 0;
     allTargets.forEach(person => {
       const personCriteria = getCriteriaForUser(person);
-      totalScores += personCriteria.length;
+      if (personCriteria.length === 0) {
+        // If no criteria, maybe they don't count or count as done? Assuming done if logic elsewhere acts that way.
+        // But usually we skip them. Let's stick to "Must have criteria and all filled".
+        return;
+      }
+
+      let personFilled = 0;
       if (scores[person.internalId]) {
         personCriteria.forEach(c => {
-          if (scores[person.internalId][c.id]) filled++;
+          if (scores[person.internalId][c.id]) personFilled++;
         })
       }
+
+      if (personFilled === personCriteria.length && personCriteria.length > 0) {
+        completed++;
+      }
     });
-    const progress = totalScores > 0 ? Math.round((filled / totalScores) * 100) : 0;
-    return { progressPercent: progress, filledScores: filled, totalPossibleScores: totalScores };
+
+    const totalPeople = allTargets.length;
+    const progress = totalPeople > 0 ? Math.round((completed / totalPeople) * 100) : 0;
+    return { progressPercent: progress, completedPeople: completed };
   }, [allTargets, scores, getCriteriaForUser]);
 
   if (!user) return null;
@@ -295,7 +306,7 @@ const AssessmentPage = () => {
               <Progress value={progressPercent} className="h-4 bg-black/20 rounded-full backdrop-blur-sm" indicatorClassName="bg-gradient-to-r from-emerald-300 to-emerald-400" />
               <div className="flex justify-between text-white/80 text-sm mt-3 font-medium">
                 <span>ผู้ที่ต้องประเมินทั้งหมด <span className="text-white font-bold">{allTargets.length}</span> คน</span>
-                <span>ประเมินไปแล้ว <span className="text-white font-bold">{filledScores}</span> รายการ</span>
+                <span>ประเมินเสร็จแล้ว <span className="text-white font-bold">{completedPeople}</span> คน</span>
               </div>
             </CardContent>
           </Card>

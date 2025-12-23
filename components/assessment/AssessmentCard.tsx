@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, DollarSign, CheckCircle, ChevronRight, ChevronDown, ChevronUp, Crown, Briefcase, UserCog, Shield, User } from 'lucide-react';
 import Image from 'next/image';
-import { formatSalaryGroup } from '@/lib/helpers';
+import { formatSalaryGroup, calculateTotal } from '@/lib/helpers';
 import { ROLES } from '@/lib/constants';
 import type { Target, Role, ScoreData, Criteria } from '@/lib/types';
 
@@ -78,7 +78,7 @@ export const AssessmentCard = ({
                     {targets.map((t) => {
                         const personCriteria = getCriteriaForUser(t);
                         const isDone = personCriteria.length > 0 && personCriteria.every(c => scores[t.internalId]?.[c.id]);
-                        const totalScore = personCriteria.reduce((sum, c) => sum + (scores[t.internalId]?.[c.id] || 0), 0);
+                        const totalScore = Math.round(calculateTotal(t.internalId, scores, personCriteria));
 
                         return (
                             <div key={t.internalId} onClick={() => navigateToIndividual(t)} className="flex items-center gap-4 p-3 rounded-2xl bg-gray-50 border border-gray-100 active:scale-[0.98] active:bg-indigo-50 transition-all cursor-pointer shadow-sm">
@@ -103,7 +103,7 @@ export const AssessmentCard = ({
                     {targets.map((t) => {
                         const personCriteria = getCriteriaForUser(t);
                         const isDone = personCriteria.length > 0 && personCriteria.every(c => scores[t.internalId]?.[c.id]);
-                        const totalScore = personCriteria.reduce((sum, c) => sum + (scores[t.internalId]?.[c.id] || 0), 0);
+                        const totalScore = Math.round(calculateTotal(t.internalId, scores, personCriteria));
 
                         return (
                             <div key={t.internalId} onClick={() => navigateToIndividual(t)} className="flex items-center gap-3 text-sm justify-between group hover:bg-slate-50 p-2 rounded-xl transition-all cursor-pointer border border-transparent hover:border-slate-100 active:scale-[0.98]">
