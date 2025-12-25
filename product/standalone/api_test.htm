@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Eval System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            background: #f4f4f9;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #eee;
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 4px;
+            font-size: 13px;
+            max-height: 300px;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Performance Eval System</h1>
+
+    <div class="controls">
+        <button onclick="fetchInitData()">Get Init Data</button>
+        <button onclick="testLogin()">Test Login (ID: 21)</button>
+        <button onclick="testUpdateScore()">Test Update Score</button>
+        <button onclick="testReset()">Reset Data</button>
+    </div>
+
+    <div id="status-area"></div>
+
+    <div class="card">
+        <h2>API Response Output</h2>
+        <pre id="output">Click a button to see response...</pre>
+    </div>
+
+    <script>
+        const API_URL = 'https://apps2.coop.ku.ac.th/hrpro_api/api.php'; // Assuming you run php -S localhost:8000
+
+        async function fetchInitData() {
+            log('Fetching init data...');
+            try {
+                const res = await fetch(`${API_URL}?action=get_init_data`);
+                const data = await res.json();
+                renderOutput(data);
+                if (data.users && data.users.length > 0) showStatus('Success: Users fetched', 'success');
+                else showStatus('Warning: No users returned', 'error');
+            } catch (e) {
+                renderOutput({ error: e.message });
+                showStatus('Error: Failed to fetch', 'error');
+            }
+        }
+
+        async function testLogin() {
+            log('Testing login for orgId 21...');
+            try {
+                const res = await fetch(`${API_URL}?action=login`, {
+                    method: 'POST',
+                    body: JSON.stringify({ org_id: 21 })
+                });
+                const data = await res.json();
+                renderOutput(data);
+                if (data.name) showStatus(`Success: Logged in as ${data.name}`, 'success');
+                else showStatus('Failed to login', 'error');
+            } catch (e) {
+                renderOutput({ error: e.message });
+            }
+        }
+
+        async function testUpdateScore() {
+            const payload = {
+                evaluatorId: 'U_21', // Example IDs from schema
+                targetId: 'U_26',
+                criteriaId: '1.1',
+                score: 85
+            };
+            log('Testing update score...', payload);
+            try {
+                const res = await fetch(`${API_URL}?action=update_score`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                renderOutput(data);
+                if (data.success) showStatus('Success: Score updated', 'success');
+                else showStatus('Failed update', 'error');
+            } catch (e) {
+                renderOutput({ error: e.message });
+            }
+        }
+
+        async function testReset() {
+            if (!confirm('Reset all scores?')) return;
+            try {
+                const res = await fetch(`${API_URL}?action=reset_data`);
+                const data = await res.json();
+                renderOutput(data);
+            } catch (e) {
+                renderOutput({ error: e.message });
+            }
+        }
+
+        function renderOutput(data) {
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function log(msg, data) {
+            document.getElementById('output').textContent = msg + (data ? '\n' + JSON.stringify(data, null, 2) : '');
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status-area');
+            el.innerHTML = `<div class="status ${type}">${msg}</div>`;
+            setTimeout(() => el.innerHTML = '', 5000);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,5 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:\\.\pipe\cfd6ada6-3854-409f-ba2c-f39e3d754adf
+
+ ✓ Starting...
+ ✓ Ready in 243ms

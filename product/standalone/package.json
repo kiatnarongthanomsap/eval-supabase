@@ -48,6 +48,7 @@
         "react-dom": "^18",
         "react-hook-form": "^7.69.0",
         "recharts": "^2.12.7",
+        "sharp": "^0.34.5",
         "tailwind-merge": "^2.5.2",
         "tailwindcss-animate": "^1.0.7",
         "xlsx": "^0.18.5",
