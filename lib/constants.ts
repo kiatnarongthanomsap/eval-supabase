@@ -1,7 +1,7 @@
 import type { Role, Criteria, CriteriaCategory } from './types';
 
 // --- Version Control ---
-export const APP_VERSION = '2.0.0'; // Full Stable Version (SMTP + Dept Adjustments + AI Tools)
+export const APP_VERSION = '3.0.0'; // Supabase Migration Version
 
 // --- 1. Constants & Configuration ---
 export const IS_DEBUG = true; // Toggle this to show/hide Dev/OTP toggles in Login Page
