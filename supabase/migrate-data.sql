@@ -1,0 +1,95 @@
+-- Migration Script: Import data from MySQL to Supabase
+-- This is a template script. Adjust column names and data types as needed.
+-- Run this in Supabase SQL Editor after creating the schema.
+
+-- ============================================
+-- Example: Import Users
+-- ============================================
+-- If you have exported data from MySQL, you can use INSERT statements like this:
+
+-- INSERT INTO users (
+--   internal_id, member_id, org_id, name, position, dept, 
+--   mobile, salary, salary_group, role, parent_internal_id, 
+--   img, is_admin, can_view_report, is_active, email
+-- ) VALUES
+-- ('U_21', '010146', 21, 'ปิยธิดา แย้มเกษร', 'ผู้จัดการ', 'ผู้จัดการ', 
+--  '0859632097', 120000.00, 'เกิน 100,000', 'MANAGER', 'U_999', 
+--  'https://apps2.coop.ku.ac.th/asset/staff/2568/crop/010146.jpg', 
+--  false, true, true, 'ypiyatida@gmail.com'),
+-- -- Add more rows here...
+-- ON CONFLICT (internal_id) DO UPDATE SET
+--   name = EXCLUDED.name,
+--   position = EXCLUDED.position,
+--   dept = EXCLUDED.dept,
+--   mobile = EXCLUDED.mobile,
+--   salary = EXCLUDED.salary,
+--   salary_group = EXCLUDED.salary_group,
+--   role = EXCLUDED.role,
+--   parent_internal_id = EXCLUDED.parent_internal_id,
+--   img = EXCLUDED.img,
+--   is_admin = EXCLUDED.is_admin,
+--   can_view_report = EXCLUDED.can_view_report,
+--   is_active = EXCLUDED.is_active,
+--   email = EXCLUDED.email;
+
+-- ============================================
+-- Example: Import Criteria
+-- ============================================
+-- INSERT INTO criteria (id, text, category, weight, description) VALUES
+-- ('1.1', 'ปริมาณผลงาน (Quantity)', 'PERF', 20, 'พิจารณาจากจำนวนปริมาณงานที่ปฏิบัติได้เทียบกับเป้าหมาย หรือภาระงานที่ได้รับมอบหมายในความรับผิดชอบ'),
+-- -- Add more rows here...
+-- ON CONFLICT (id) DO UPDATE SET
+--   text = EXCLUDED.text,
+--   category = EXCLUDED.category,
+--   weight = EXCLUDED.weight,
+--   description = EXCLUDED.description;
+
+-- ============================================
+-- Example: Import Evaluations
+-- ============================================
+-- INSERT INTO evaluations (evaluator_internal_id, target_internal_id, criteria_id, score) VALUES
+-- ('U_29', 'U_21', '1.1', 4),
+-- -- Add more rows here...
+-- ON CONFLICT (evaluator_internal_id, target_internal_id, criteria_id) DO UPDATE SET
+--   score = EXCLUDED.score;
+
+-- ============================================
+-- Example: Import Comments
+-- ============================================
+-- INSERT INTO comments (evaluator_internal_id, target_internal_id, comment) VALUES
+-- ('U_29', 'U_21', 'test 01'),
+-- -- Add more rows here...
+-- ON CONFLICT (evaluator_internal_id, target_internal_id) DO UPDATE SET
+--   comment = EXCLUDED.comment;
+
+-- ============================================
+-- Example: Import Exclusions
+-- ============================================
+-- INSERT INTO exclusions (evaluator_org_id, target_org_id, reason) VALUES
+-- (53, 22, 'ปฐมพงศ์ ไม่ต้องประเมิน พรชนัน'),
+-- -- Add more rows here...
+-- ON CONFLICT DO NOTHING;
+
+-- ============================================
+-- Example: Import System Config
+-- ============================================
+-- INSERT INTO system_config (key, value) VALUES
+-- ('start_date', '2025-01-20'),
+-- ('end_date', '2025-12-31'),
+-- ('send_email_copy', 'true'),
+-- ('smtp_host', 'smtp.gmail.com'),
+-- ('smtp_port', '465'),
+-- ('smtp_user', 'kiatnarong.t@ku.th'),
+-- ('smtp_encryption', 'ssl'),
+-- ('dept_adjustments', '{"บัญชี":1,"การเงินและลงทุน":1,"ไอที":1,"สินเชื่อและกำแพงแสน":1,"บริหารทั่วไป":1,"รองผู้จัดการ":1,"ผู้จัดการ":1,"คณะกรรมการ":1}')
+-- ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+
+-- ============================================
+-- Notes:
+-- ============================================
+-- 1. Adjust data types and column names to match your Supabase schema
+-- 2. Use ON CONFLICT to handle duplicate entries
+-- 3. For large datasets, consider using Supabase Dashboard > Table Editor > Import
+-- 4. Always backup your data before running migration scripts
+-- 5. Test with a small dataset first
+

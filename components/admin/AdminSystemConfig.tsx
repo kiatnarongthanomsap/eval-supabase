@@ -220,21 +220,17 @@ const AdminSystemConfig = () => {
                                             onClick={async () => {
                                                 toast({ title: "Testing...", description: "กำลังทดสอบการเชื่อมต่อ SMTP" });
                                                 try {
-                                                    const res = await fetch(`${API_BASE_URL}?action=test_smtp`, {
+                                                    const res = await fetch(`${API_BASE_URL}/config/test-smtp`, {
                                                         method: 'POST',
                                                         headers: { 'Content-Type': 'application/json' },
                                                         body: JSON.stringify(systemConfig)
                                                     });
-                                                    const responseText = await res.text();
-                                                    let data;
-                                                    try { data = JSON.parse(responseText); } catch (e) {
-                                                        throw new Error("Invalid response format");
-                                                    }
+                                                    const data = await res.json();
                                                     if (data.logs) setSmtpTestLogs(data.logs);
                                                     if (data.success) {
                                                         toast({ title: "Success", description: "เชื่อมต่อ SMTP สำเร็จ" });
                                                     } else {
-                                                        toast({ variant: "destructive", title: "Failed", description: data.error || "เชื่อมต่อไม่สำเร็จ" });
+                                                        toast({ variant: "destructive", title: "Failed", description: data.error || data.message || "เชื่อมต่อไม่สำเร็จ" });
                                                         if (data.logs) setIsLogsOpen(true);
                                                     }
                                                 } catch (err: any) {

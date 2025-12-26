@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
-import { ROLES } from '@/lib/constants';
+import { ROLES, API_BASE_URL } from '@/lib/constants';
 import { findTargets } from '@/lib/helpers';
 import { ArrowLeft, Footprints, TrendingUp, Search, Building, Users, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -215,7 +215,7 @@ const ProgressPage = () => {
             const promises = incompleteUsers.map(async (u) => {
                 if (!u.mobile) return;
                 try {
-                    const res = await fetch(`/api/otp/request?mobile_no=${u.mobile}&msg=${encodeURIComponent(smsMessage)}`);
+                    const res = await fetch(`${API_BASE_URL}/otp/request?mobile_no=${u.mobile}&msg=${encodeURIComponent(smsMessage)}`);
                     if (res.ok) successCount++;
                 } catch (e) {
                     console.error(`Failed to send SMS to ${u.name}`, e);

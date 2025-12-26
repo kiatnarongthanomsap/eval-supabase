@@ -12,6 +12,12 @@ const nextConfig = {
                 port: '',
                 pathname: '/**', // อนุญาตทุกรูปในเว็บนี้
             },
+            {
+                protocol: 'https',
+                hostname: 'picsum.photos', // สำหรับ placeholder images
+                port: '',
+                pathname: '/**',
+            },
         ],
     },
 };

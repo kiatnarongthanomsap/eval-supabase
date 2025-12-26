@@ -33,6 +33,7 @@
         "@radix-ui/react-tabs": "^1.1.13",
         "@radix-ui/react-toast": "^1.2.1",
         "@radix-ui/react-tooltip": "^1.1.2",
+        "@supabase/supabase-js": "^2.89.0",
         "autoprefixer": "^10.4.23",
         "axios": "^1.13.2",
         "class-variance-authority": "^0.7.0",

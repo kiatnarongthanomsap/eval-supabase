@@ -5,7 +5,9 @@ export const APP_VERSION = '2.0.0'; // Full Stable Version (SMTP + Dept Adjustme
 
 // --- 1. Constants & Configuration ---
 export const IS_DEBUG = true; // Toggle this to show/hide Dev/OTP toggles in Login Page
-export const API_BASE_URL = '/kuscc-eval/api/proxy';
+// Use Supabase API routes instead of PHP proxy
+// Note: basePath is '/kuscc-eval' in next.config.mjs, so API routes need to include it
+export const API_BASE_URL = '/kuscc-eval/api';
 
 export const RECOMMENDED_ADJUSTMENT: { [key: string]: number } = {
   'บัญชี': 1.00,

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { APP_VERSION, ROLES, IS_DEBUG } from '@/lib/constants';
+import { APP_VERSION, ROLES, IS_DEBUG, API_BASE_URL } from '@/lib/constants';
 import { formatSalaryGroup } from '@/lib/helpers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
@@ -80,7 +80,7 @@ const LoginPage = () => {
     setMobileNumber(userMobile); // Store for ref
 
     try {
-      const res = await fetch(`/api/otp/request?mobile_no=${userMobile}`);
+      const res = await fetch(`${API_BASE_URL}/otp/request?mobile_no=${userMobile}`);
       const data = await res.json();
 
       let refCode = '';

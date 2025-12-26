@@ -101,17 +101,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // STRICT ISOLATION: Always filter by evaluator_id for the main context.
       // This ensures the Assessment Table NEVER sees other people's data.
       // Global reports use 'fetchReportData' instead.
-      const url = `${API_BASE_URL}?action=get_init_data${evaluatorId ? `&evaluator_id=${evaluatorId}` : ''}`;
+      const url = `${API_BASE_URL}/init${evaluatorId ? `?evaluator_id=${evaluatorId}` : ''}`;
 
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) {
-        let errorMsg = 'Failed to fetch initial data';
-        try {
-          const errorData = await res.json();
-          errorMsg = errorData.error || errorMsg;
-        } catch (e) {
-          const text = await res.text();
-          errorMsg = text.substring(0, 100) || errorMsg;
+        let errorMsg = `Failed to fetch initial data (${res.status} ${res.statusText})`;
+        const contentType = res.headers.get('content-type');
+        
+        // Only try to parse JSON if content-type is JSON
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = await res.json();
+            errorMsg = errorData.error || errorMsg;
+          } catch (e) {
+            // If JSON parsing fails, use default message
+            errorMsg = `API returned non-JSON response (${res.status})`;
+          }
+        } else {
+          // If response is HTML (like Next.js error page), provide a better error message
+          errorMsg = `API endpoint returned HTML instead of JSON. This usually means the API route is not found or there's a server error. (${res.status})`;
         }
         throw new Error(errorMsg);
       }
@@ -176,9 +184,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const fetchReportData = async (options?: { raw?: boolean }) => {
     try {
-      let url = `${API_BASE_URL}?action=get_init_data`;
+      let url = `${API_BASE_URL}/init`;
+      const params = new URLSearchParams();
       if (options?.raw) {
-        url += '&raw=true';
+        params.append('raw', 'true');
+      }
+      if (params.toString()) {
+        url += `?${params.toString()}`;
       }
       // No evaluator_id means fetching all data (Global View)
       const res = await fetch(url, { cache: 'no-store' });
@@ -193,14 +205,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const sendEvaluationEmail = async (evaluationData: any) => {
     if (!user) return false;
     try {
-      const res = await fetch(`${API_BASE_URL}?action=send_evaluation_summary`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          evaluator_id: user.internalId,
-          evaluation_data: evaluationData
-        })
-      });
+      // TODO: Implement email sending API route
+      // For now, return false as email functionality needs SMTP setup
+      console.warn('Email sending not yet implemented in Supabase migration');
+      return false;
+      // const res = await fetch(`${API_BASE_URL}/email`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     evaluator_id: user.internalId,
+      //     evaluation_data: evaluationData
+      //   })
+      // });
       const data = await res.json();
       if (data.success) {
         toast({ title: "Email Sent", description: "สำเนาผลการประเมินถูกส่งไปที่อีเมลของคุณแล้ว" });
@@ -298,7 +314,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      await fetch(`${API_BASE_URL}?action=update_score`, {
+      await fetch(`${API_BASE_URL}/score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -325,7 +341,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      await fetch(`${API_BASE_URL}?action=update_comment`, {
+      await fetch(`${API_BASE_URL}/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -349,7 +365,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const configToSave = { ...newConfig, deptAdjustment: newConfig.deptAdjustment || deptAdjustment };
-      await fetch(`${API_BASE_URL}?action=update_config`, {
+      await fetch(`${API_BASE_URL}/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(configToSave)
@@ -369,7 +385,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setExclusions(prev => [...prev, newEx]);
 
     try {
-      const res = await fetch(`${API_BASE_URL}?action=add_exclusion`, {
+      const res = await fetch(`${API_BASE_URL}/exclusions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ evaluatorId, targetId, reason })
@@ -393,10 +409,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setExclusions(prev => prev.filter(ex => ex.id !== id));
 
     try {
-      await fetch(`${API_BASE_URL}?action=delete_exclusion`, {
-        method: 'POST',
+      await fetch(`${API_BASE_URL}/exclusions?id=${id}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
       });
       toast({ title: "ลบข้อยกเว้นแล้ว" });
     } catch (error) {
@@ -414,7 +429,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // For now, let's just make the API call. The caller (AdminUserManagement) will handle local state optimistically or re-fetch.
 
     try {
-      const res = await fetch(`${API_BASE_URL}?action=save_user`, {
+      const res = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -429,10 +444,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteUser = async (internalId: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}?action=delete_user`, {
-        method: 'POST',
+      const res = await fetch(`${API_BASE_URL}/users?internalId=${encodeURIComponent(internalId)}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ internalId })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -444,11 +458,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const importUsers = async (newUsers: User[]) => {
     try {
-      const res = await fetch(`${API_BASE_URL}?action=import_users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUsers)
-      });
+      // Import users one by one or in batch
+      for (const userData of newUsers) {
+        const res = await fetch(`${API_BASE_URL}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+      }
+      return { success: true, count: newUsers.length };
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       return data;
@@ -463,7 +483,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       setScores({});
       setComments({});
-      await fetch(`${API_BASE_URL}?action=reset_data`);
+      await fetch(`${API_BASE_URL}/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
       addLog('ADMIN', 'Reset all scores and comments');
       toast({ title: 'รีเซ็ตข้อมูลแล้ว', description: 'คะแนนและความคิดเห็นทั้งหมดถูกล้างแล้ว' });
     } catch (error) {
@@ -486,7 +509,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     try {
-      const res = await fetch(`${API_BASE_URL}?action=save_criteria`, {
+      const res = await fetch(`${API_BASE_URL}/criteria`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCriteria)
@@ -505,10 +528,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCriteria(prev => prev.filter(c => c.id !== id));
 
     try {
-      const res = await fetch(`${API_BASE_URL}?action=delete_criteria`, {
-        method: 'POST',
+      const res = await fetch(`${API_BASE_URL}/criteria?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
