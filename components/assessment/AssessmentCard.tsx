@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, DollarSign, CheckCircle, ChevronRight, ChevronDown, ChevronUp, Crown, Briefcase, UserCog, Shield, User } from 'lucide-react';
+import { Users, CheckCircle, ChevronRight, ChevronDown, ChevronUp, Crown, Briefcase, UserCog, Shield, User } from 'lucide-react';
 import Image from 'next/image';
 import { formatSalaryGroup, calculateTotal } from '@/lib/helpers';
 import { ROLES } from '@/lib/constants';
@@ -13,7 +13,6 @@ interface AssessmentCardProps {
     groupLabel: string;
     groupKey: string;
     scores: ScoreData;
-    filterType: 'role' | 'salary';
     getCriteriaForUser: (user: Target) => Criteria[];
     navigateToIndividual: (user: Target) => void;
     navigateToGroup: (group: string) => void;
@@ -24,7 +23,6 @@ export const AssessmentCard = ({
     groupLabel,
     groupKey,
     scores,
-    filterType,
     getCriteriaForUser,
     navigateToIndividual,
     navigateToGroup
@@ -37,8 +35,7 @@ export const AssessmentCard = ({
     });
 
     const getIcon = () => {
-        if (filterType === 'salary') return <DollarSign className="h-7 w-7 text-muted-foreground" />;
-
+        // Always show role-based icons since we only group by role now
         switch (groupKey) {
             case ROLES.COMMITTEE: return <Crown className="h-7 w-7 text-yellow-600" />;
             case ROLES.MANAGER: return <Briefcase className="h-7 w-7 text-blue-600" />;
@@ -70,7 +67,7 @@ export const AssessmentCard = ({
                     </div>
                 </div>
                 <CardTitle className="font-headline pt-5 truncate text-xl text-gray-800" title={groupLabel}>{groupLabel}</CardTitle>
-                <CardDescription className="h-5 text-sm font-medium opacity-80">{filterType === 'role' ? targets[0]?.type : 'ระดับเงินเดือน'}</CardDescription>
+                <CardDescription className="h-5 text-sm font-medium opacity-80">{targets[0]?.dept || 'ตำแหน่ง'}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 min-h-0 flex flex-col px-6">
                 {/* Mobile View */}

@@ -5,7 +5,7 @@ import { useAppContext } from '@/components/layout/AppProvider';
 import { findTargets, formatSalaryGroup } from '@/lib/helpers';
 import { ROLES, ROLE_LABELS } from '@/lib/constants';
 import type { Target, Role } from '@/lib/types';
-import { CheckCircle, ChevronRight, DollarSign, FileText, LogOut, Settings, UserCircle, Users, AlertTriangle, Footprints } from 'lucide-react';
+import { CheckCircle, ChevronRight, FileText, LogOut, Settings, UserCircle, AlertTriangle, Footprints } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -19,7 +19,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const AssessmentPage = () => {
-  const { user, logout, navigateToGroup, scores, setView, navigateToIndividual, filterType, setFilterType, exclusions, allUsers, getCriteriaForUser, systemConfig, sendEvaluationEmail, comments } = useAppContext();
+  const { user, logout, navigateToGroup, scores, setView, navigateToIndividual, exclusions, allUsers, getCriteriaForUser, systemConfig, sendEvaluationEmail, comments } = useAppContext();
   const [isSendingEmail, setIsSendingEmail] = React.useState(false);
 
   const isOutOfTime = useMemo(() => {
@@ -85,8 +85,9 @@ const AssessmentPage = () => {
 
   const { groupedTargets, sortedGroupEntries } = useMemo(() => {
     const groups: { [key: string]: any[] } = {};
+    // Always group by role (position)
     allTargets.forEach(t => {
-      const key = filterType === 'salary' ? (t.salaryGroup || 'N/A') : t.role;
+      const key = t.role;
       if (!groups[key]) groups[key] = [];
       groups[key].push(t);
     });
@@ -122,36 +123,16 @@ const AssessmentPage = () => {
       });
     });
 
+    // Always sort by role order
     const sortedEntries = Object.entries(groups).sort(([keyA], [keyB]) => {
-      if (filterType === 'role') {
-        const roleOrder = [ROLES.COMMITTEE, ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
-        const indexA = roleOrder.indexOf(keyA as any);
-        const indexB = roleOrder.indexOf(keyB as any);
-        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-      }
-
-      // Custom sort for salary groups
-      const salaryOrder = [
-        'เกิน 100,000',
-        'เกิน 50,000',
-        'เกิน 40,000',
-        'เกิน 30,000',
-        'เกิน 20,000',
-        'ไม่เกิน 20,000',
-        'ไม่จัดกลุ่ม',
-        'N/A',
-      ];
-      const indexA = salaryOrder.indexOf(keyA);
-      const indexB = salaryOrder.indexOf(keyB);
-
-      const valA = indexA === -1 ? 999 : indexA;
-      const valB = indexB === -1 ? 999 : indexB;
-
-      return valA - valB;
+      const roleOrder = [ROLES.COMMITTEE, ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
+      const indexA = roleOrder.indexOf(keyA as any);
+      const indexB = roleOrder.indexOf(keyB as any);
+      return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
     });
 
     return { groupedTargets: groups, sortedGroupEntries: sortedEntries };
-  }, [allTargets, filterType]);
+  }, [allTargets]);
 
   const { progressPercent, completedPeople } = useMemo(() => {
     let completed = 0;
@@ -317,10 +298,6 @@ const AssessmentPage = () => {
                 <span className="w-1.5 h-8 bg-primary rounded-full"></span>
                 รายการประเมินของคุณ
               </h2>
-              <div className="flex bg-white/60 p-1.5 rounded-2xl shadow-sm border border-gray-100 self-end md:self-center backdrop-blur-sm">
-                <Button onClick={() => setFilterType('role')} variant={filterType === 'role' ? 'default' : 'ghost'} size="sm" className={`gap-2 rounded-xl transition-all h-9 ${filterType === 'role' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md transform scale-105' : 'text-gray-500 hover:bg-white/50'}`}><Users size={16} />แยกตามตำแหน่ง</Button>
-                <Button onClick={() => setFilterType('salary')} variant={filterType === 'salary' ? 'default' : 'ghost'} size="sm" className={`gap-2 rounded-xl transition-all h-9 ${filterType === 'salary' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md transform scale-105' : 'text-gray-500 hover:bg-white/50'}`}><DollarSign size={16} />แยกตามกลุ่มเงินเดือน</Button>
-              </div>
             </div>
 
             {allTargets.length === 0 ? (
@@ -334,7 +311,7 @@ const AssessmentPage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 {sortedGroupEntries.map(([key, targets]) => {
-                  const groupLabel = filterType === 'role' ? ROLE_LABELS[key as Role] || key : key;
+                  const groupLabel = ROLE_LABELS[key as Role] || key;
 
                   return (
                     <AssessmentCard
@@ -343,7 +320,6 @@ const AssessmentPage = () => {
                       groupLabel={groupLabel}
                       groupKey={key}
                       scores={scores}
-                      filterType={filterType}
                       getCriteriaForUser={getCriteriaForUser}
                       navigateToIndividual={navigateToIndividual}
                       navigateToGroup={navigateToGroup}

@@ -21,7 +21,7 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 
 const EvaluationTable = () => {
-  const { user, currentGroup, goBack, scores, updateScore, setScores, filterType, getCriteriaForUser, exclusions, allUsers, comments, updateComment, systemConfig } = useAppContext();
+  const { user, currentGroup, goBack, scores, updateScore, setScores, getCriteriaForUser, exclusions, allUsers, comments, updateComment, systemConfig } = useAppContext();
   const { toast } = useToast();
 
   const isOutOfTime = useMemo(() => {
@@ -32,8 +32,9 @@ const EvaluationTable = () => {
   const people = useMemo(() => {
     if (!user || !currentGroup) return [];
     const allTargets = findTargets(user, allUsers, exclusions);
-    return allTargets.filter(t => (filterType === 'role' ? t.role : t.salaryGroup) === currentGroup);
-  }, [user, currentGroup, allUsers, exclusions, filterType]);
+    // Always filter by role (position)
+    return allTargets.filter(t => t.role === currentGroup);
+  }, [user, currentGroup, allUsers, exclusions]);
 
   const groupCriteria = useMemo(() => {
     if (people.length === 0) return [];
@@ -110,7 +111,7 @@ const EvaluationTable = () => {
         <Button onClick={goBack} variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100"><ArrowLeft className="h-5 w-5 text-gray-600" /></Button>
         <div>
           <h2 className="text-xl font-bold font-headline text-gray-800 tracking-tight flex items-center gap-2">
-            กำลังประเมินระดับ: <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">{filterType === 'role' ? ROLE_LABELS[currentGroup as keyof typeof ROLE_LABELS] : currentGroup}</span>
+            กำลังประเมินระดับ: <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">{ROLE_LABELS[currentGroup as keyof typeof ROLE_LABELS] || currentGroup}</span>
           </h2>
           <p className="text-xs text-gray-500 font-medium mt-0.5">ประเภท: {people[0]?.type}</p>
         </div>
