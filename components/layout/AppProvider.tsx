@@ -140,6 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const mappedConfig: SystemConfig = {
           startDate: config.start_date || config.startDate || systemConfig.startDate,
           endDate: config.end_date || config.endDate || systemConfig.endDate,
+          isDebug: config.is_debug === 'true' || config.isDebug === true || false,
           sendEmailCopy: config.send_email_copy === 'true' || config.sendEmailCopy === true,
           smtpHost: config.smtp_host || config.smtpHost,
           smtpPort: config.smtp_port || config.smtpPort,

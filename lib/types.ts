@@ -77,6 +77,7 @@ export interface Exclusion {
 export interface SystemConfig {
   startDate: string;
   endDate: string;
+  isDebug?: boolean;
   sendEmailCopy: boolean;
   smtpHost?: string;
   smtpPort?: string;

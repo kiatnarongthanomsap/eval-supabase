@@ -4,10 +4,16 @@ import type { Role, Criteria, CriteriaCategory } from './types';
 export const APP_VERSION = '3.0.0'; // Supabase Migration Version
 
 // --- 1. Constants & Configuration ---
-export const IS_DEBUG = true; // Toggle this to show/hide Dev/OTP toggles in Login Page
+// Note: IS_DEBUG is now fetched from database (system_config.is_debug)
+// Use getIsDebug() helper or access from systemConfig in AppProvider context
+// Default fallback value
+//export const IS_DEBUG_DEFAULT = true; // Fallback if database value is not available
+
 // Use Supabase API routes instead of PHP proxy
-// Note: basePath is '/kuscc-eval' in next.config.mjs, so API routes need to include it
-export const API_BASE_URL = '/kuscc-eval/api';
+// Note: In development use '/api', in production use '/kuscc-eval/api'
+export const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/kuscc-eval/api' 
+  : '/api';
 
 export const RECOMMENDED_ADJUSTMENT: { [key: string]: number } = {
   'บัญชี': 1.00,

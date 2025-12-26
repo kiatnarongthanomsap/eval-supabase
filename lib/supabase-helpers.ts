@@ -400,7 +400,21 @@ export async function getSystemConfig() {
         // Keep as string if not valid JSON
       }
     }
-    config[row.key] = val;
+    
+    // Map database keys to frontend keys
+    if (row.key === 'is_debug') {
+      config['isDebug'] = val === 'true' || val === true;
+    } else if (row.key === 'start_date') {
+      config['startDate'] = val;
+    } else if (row.key === 'end_date') {
+      config['endDate'] = val;
+    } else if (row.key === 'send_email_copy') {
+      config['sendEmailCopy'] = val === 'true' || val === true;
+    } else if (row.key === 'dept_adjustments') {
+      config['deptAdjustment'] = val;
+    } else {
+      config[row.key] = val;
+    }
   });
 
   return config as Partial<SystemConfig>;
@@ -418,6 +432,10 @@ export async function updateSystemConfig(config: Partial<SystemConfig>) {
     // Map frontend keys to database keys
     if (key === 'startDate') dbKey = 'start_date';
     if (key === 'endDate') dbKey = 'end_date';
+    if (key === 'isDebug') {
+      dbKey = 'is_debug';
+      dbValue = (value === true || value === 'true' || value === 1 || value === '1') ? 'true' : 'false';
+    }
     if (key === 'smtpHost') dbKey = 'smtp_host';
     if (key === 'smtpPort') dbKey = 'smtp_port';
     if (key === 'smtpUser') dbKey = 'smtp_user';

@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
-    basePath: '/kuscc-eval',
+    // Only use basePath in production
+    basePath: process.env.NODE_ENV === 'production' ? '/kuscc-eval' : '',
     trailingSlash: true,
     images: {
         // เพิ่มส่วนนี้ครับ 👇

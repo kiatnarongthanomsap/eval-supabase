@@ -10,14 +10,24 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { APP_VERSION, ROLES, IS_DEBUG, API_BASE_URL } from '@/lib/constants';
+import { APP_VERSION, ROLES, IS_DEBUG_DEFAULT, API_BASE_URL } from '@/lib/constants';
 import { formatSalaryGroup } from '@/lib/helpers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 
 const LoginPage = () => {
-  const { login, allUsers, isLoading } = useAppContext();
-  const [isDevMode, setIsDevMode] = useState(IS_DEBUG);
+  const { login, allUsers, isLoading, systemConfig } = useAppContext();
+  // Use isDebug from database (system_config)
+  // Don't use default until we know the actual value from DB
+  const [isDevMode, setIsDevMode] = useState(() => {
+    // Only use default if systemConfig is not loaded yet AND we're still loading
+    // Once loaded, use the actual value from DB (even if undefined/null)
+    if (isLoading) {
+      return IS_DEBUG_DEFAULT; // Temporary default while loading
+    }
+    // After loading, use DB value (default to false if not set)
+    return systemConfig?.isDebug ?? false;
+  });
 
   const [mobileNumber, setMobileNumber] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -58,6 +68,15 @@ const LoginPage = () => {
       setSelectedUserId('');
     }
   }, [usersInDept]);
+
+  // Sync isDevMode with systemConfig.isDebug from database
+  useEffect(() => {
+    // Once data is loaded, use the actual value from DB
+    if (!isLoading) {
+      // Use DB value, default to false if not set (safer for production)
+      setIsDevMode(systemConfig?.isDebug ?? false);
+    }
+  }, [systemConfig?.isDebug, isLoading]);
 
   // Reset OTP state when changing user or toggling mode
   useEffect(() => {
@@ -161,7 +180,7 @@ const LoginPage = () => {
       </div>
 
       {/* Dev Mode Toggle - Top Right (Hidden if not Dev UI) */}
-      {IS_DEBUG && (
+      {isDevMode && (
         <Button
           onClick={() => setIsDevMode(!isDevMode)}
           variant={isDevMode ? "default" : "outline"}
