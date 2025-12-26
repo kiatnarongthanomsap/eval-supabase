@@ -15,12 +15,12 @@
 ไฟล์ `.env.local` ถูกสร้างไว้แล้วพร้อม credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://uuharymonhyvyqxvlkqk.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_F_YI7jgthOfWSqVXM5mi7Q_W93Ts9fp
+NEXT_PUBLIC_SUPABASE_URL=https://fcezmzydokhxlajxaxdq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_jnmwgsWStQVoq7i3mzBhDA_Vdq_fzCx
 ```
 
 **หมายเหตุ:** 
-- ✅ Supabase URL และ Anon Key ถูกตั้งค่าไว้แล้ว (โปรเจคใหม่)
+- ✅ Supabase URL และ Anon Key ถูกตั้งค่าไว้แล้ว (โปรเจคปัจจุบัน)
 - ⚠️ `SUPABASE_SERVICE_ROLE_KEY` ยังไม่ได้ตั้งค่า (optional สำหรับ server-side operations)
   - หาได้จาก Supabase Dashboard > Settings > API > service_role key
   - เพิ่มใน `.env.local` ถ้าต้องการใช้ elevated permissions

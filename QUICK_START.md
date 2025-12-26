@@ -12,7 +12,7 @@
 ### 1. ตั้งค่า Database Schema
 
 **สำหรับโปรเจคใหม่ (แนะนำ):**
-1. ไปที่ [Supabase Dashboard](https://app.supabase.com/project/uuharymonhyvyqxvlkqk)
+1. ไปที่ [Supabase Dashboard](https://app.supabase.com/project/fcezmzydokhxlajxaxdq)
 2. เปิด **SQL Editor**
 3. คัดลอกเนื้อหาจากไฟล์ `supabase/schema.sql`
 4. วางและรัน SQL script (จะสร้างตารางทั้งหมดใหม่)
