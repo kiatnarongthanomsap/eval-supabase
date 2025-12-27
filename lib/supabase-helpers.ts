@@ -284,7 +284,7 @@ export async function getComments(evaluatorId?: string) {
   } else {
     // Report view: array of comment objects with evaluator names
     // Fetch evaluator names separately
-    const evaluatorIds = [...new Set(commentsData.map((c: any) => c.evaluator_internal_id))];
+    const evaluatorIds = Array.from(new Set(commentsData.map((c: any) => c.evaluator_internal_id)));
     const { data: usersData } = await supabase
       .from('users')
       .select('internal_id, name')
@@ -434,7 +434,7 @@ export async function updateSystemConfig(config: Partial<SystemConfig>) {
     if (key === 'endDate') dbKey = 'end_date';
     if (key === 'isDebug') {
       dbKey = 'is_debug';
-      dbValue = (value === true || value === 'true' || value === 1 || value === '1') ? 'true' : 'false';
+      dbValue = (value === true || value === 'true' || String(value) === '1') ? 'true' : 'false';
     }
     if (key === 'smtpHost') dbKey = 'smtp_host';
     if (key === 'smtpPort') dbKey = 'smtp_port';
@@ -446,7 +446,7 @@ export async function updateSystemConfig(config: Partial<SystemConfig>) {
     if (key === 'smtpEncryption') dbKey = 'smtp_encryption';
     if (key === 'sendEmailCopy') {
       dbKey = 'send_email_copy';
-      dbValue = (value === true || value === 'true' || value === 1 || value === '1') ? 'true' : 'false';
+      dbValue = (value === true || value === 'true' || String(value) === '1') ? 'true' : 'false';
     }
     if (key === 'deptAdjustment') {
       dbKey = 'dept_adjustments';
