@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { saveUser, deleteUser, getUsers } from '@/lib/supabase-helpers';
 import type { User } from '@/lib/types';
 
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const users = await getUsers();

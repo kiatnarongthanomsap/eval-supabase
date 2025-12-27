@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getExclusions, addExclusion, deleteExclusion } from '@/lib/supabase-helpers';
 
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const exclusions = await getExclusions();

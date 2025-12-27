@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { saveCriteria, deleteCriteria, getCriteria } from '@/lib/supabase-helpers';
 import type { Criteria } from '@/lib/types';
 
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const criteria = await getCriteria();

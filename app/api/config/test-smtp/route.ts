@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as net from 'net';
 import * as tls from 'tls';
 
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 interface SmtpConfig {
   smtpHost: string;
   smtpPort: number;
