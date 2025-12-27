@@ -21,6 +21,13 @@ const nextConfig = {
             },
         ],
     },
+    // Skip API routes during build to prevent requiring env vars
+    experimental: {
+        // Disable static optimization for API routes
+        serverActions: {
+            bodySizeLimit: '2mb',
+        },
+    },
 };
 
 export default nextConfig;

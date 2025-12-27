@@ -2,7 +2,13 @@ import { createServerClient } from './supabase';
 import type { User, Criteria, SystemConfig, Exclusion } from './types';
 
 // Helper function to get Supabase client
-const getSupabase = () => createServerClient();
+const getSupabase = () => {
+  // Check if env vars are available (skip during build if missing)
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    throw new Error('Supabase configuration missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+  }
+  return createServerClient();
+};
 
 // ============================================
 // Users Helpers

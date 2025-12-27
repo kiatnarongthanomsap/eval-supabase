@@ -6,11 +6,18 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase URL or Anon Key is missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env file');
+  // Only warn in development/runtime, not during build
+  if (process.env.NODE_ENV !== 'production' || typeof window !== 'undefined') {
+    console.warn('Supabase URL or Anon Key is missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env file');
+  }
 }
 
 // Create Supabase client for client-side usage
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use dummy values during build if env vars are missing to prevent build errors
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+);
 
 // Create Supabase client for server-side usage (with service role key if needed)
 // For server-side operations that require elevated permissions
