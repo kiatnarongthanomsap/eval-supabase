@@ -33,6 +33,7 @@ const LoginPage = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otpResponse, setOtpResponse] = useState<string>('');
 
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
@@ -83,91 +84,219 @@ const LoginPage = () => {
     setOtpSent(false);
     setOtpCode('');
     setMobileNumber('');
+    setOtpResponse('');
   }, [selectedUserId, isDevMode]);
 
   const handleSendOtp = async (userMobile: string) => {
     if (!userMobile) {
       toast({
         title: "ไม่พบเบอร์โทรศัพท์",
-        description: "ผู้ใช้งานนี้ยังไมได้ลงทะเบียนเบอร์โทรศัพท์ในระบบ",
+        description: "ผู้ใช้งานนี้ยังไม่ได้ลงทะเบียนเบอร์โทรศัพท์ในระบบ",
         variant: "destructive"
       });
       return;
     }
 
     setIsSendingOtp(true);
-    setMobileNumber(userMobile); // Store for ref
 
     try {
-      const res = await fetch(`${API_BASE_URL}/otp/request?mobile_no=${userMobile}`);
-      const data = await res.json();
+      const response = await fetch(`${API_BASE_URL}/otp/request?mobile_no=${userMobile}`);
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check if request was successful
+      if (data.success === false || data.error) {
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      // Extract reference codes and check for OTP in response
       let refCode = '';
-
-      if (typeof data === 'string') {
-        const refMatch = data.match(/Ref:\s*([A-Za-z0-9]+)/);
-        refCode = refMatch ? refMatch[1] : '';
-      } else if (data.returnValue) {
+      let taskId = '';
+      let messageId = '';
+      let otpCodeFromResponse = '';
+      
+      // Try to extract OTP code (usually 4-6 digits) - though OTP is usually sent via SMS only
+      const otpPattern = /\b\d{4,6}\b/g;
+      
+      // Extract Task ID and Message ID from response message
+      const responseText = typeof data.message === 'string' ? data.message : 
+                          typeof data.data === 'string' ? data.data : 
+                          JSON.stringify(data);
+      
+      const taskIdMatch = responseText.match(/TASK_ID[=\s:]+(\d+)/i);
+      const messageIdMatch = responseText.match(/MESSAGE_ID[=\s:]+(\d+)/i);
+      
+      if (taskIdMatch) taskId = taskIdMatch[1];
+      if (messageIdMatch) messageId = messageIdMatch[1];
+      
+      // Check for reference code
+      if (data.returnValue) {
         refCode = data.returnValue;
+      } else {
+        const refMatch = responseText.match(/Ref[:\s=]+([A-Za-z0-9]+)/i);
+        if (refMatch) refCode = refMatch[1];
+      }
+      
+      // Check if OTP code is in response (unlikely, but possible in dev/testing)
+      const otpMatch = responseText.match(otpPattern);
+      if (otpMatch && otpMatch[0].length >= 4 && otpMatch[0].length <= 6) {
+        // Make sure it's not Task ID or Message ID
+        if (otpMatch[0] !== taskId && otpMatch[0] !== messageId) {
+          otpCodeFromResponse = otpMatch[0];
+        }
       }
 
-      if (refCode || typeof data === 'string') {
-        setOtpSent(true);
-        toast({
-          title: "ส่ง OTP สำเร็จ",
-          description: `รหัส OTP ถูกส่งไปยัง ${userMobile} แล้ว${refCode ? ` (Ref: ${refCode})` : ''}`,
-        });
-      } else {
-        throw new Error(data.error || `Invalid response: ${JSON.stringify(data)}`);
+      // Store full response for debugging
+      setOtpResponse(JSON.stringify(data, null, 2));
+
+      // Store mobile number and mark OTP as sent
+      setMobileNumber(userMobile);
+      setOtpSent(true);
+
+      // Auto-fill OTP code if found in response
+      if (otpCodeFromResponse) {
+        setOtpCode(otpCodeFromResponse);
       }
-    } catch (error: any) {
-      console.error(error);
+
+      // Build success message
+      let toastDescription = '';
+      if (otpCodeFromResponse) {
+        toastDescription = `รหัส OTP: ${otpCodeFromResponse}`;
+        if (taskId) toastDescription += ` (Task ID: ${taskId})`;
+      } else {
+        toastDescription = `รหัส OTP ถูกส่งไปยัง ${userMobile} แล้ว`;
+        if (taskId) {
+          toastDescription += `\nTask ID: ${taskId}`;
+        }
+        toastDescription += '\nกรุณาตรวจสอบ SMS ในโทรศัพท์ของคุณ';
+      }
+
       toast({
-        title: "ส่ง OTP ไม่สำเร็จ (ข้อผิดพลาด)",
-        description: error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ OTP",
+        title: "ส่ง OTP สำเร็จ",
+        description: toastDescription,
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ OTP';
+      
+      toast({
+        title: "ส่ง OTP ไม่สำเร็จ",
+        description: errorMessage,
         variant: "destructive"
       });
-      // Do not allow proceeding if OTP failed
+
+      // Reset OTP state on error
       setOtpSent(false);
+      setMobileNumber('');
+      setOtpResponse('');
     } finally {
       setIsSendingOtp(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const userToLogin = allUsers.find(user => user.internalId === selectedUserId);
 
-    if (!userToLogin) return;
+    if (!userToLogin) {
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่พบข้อมูลผู้ใช้งาน",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    if (!isDevMode) {
-      if (!otpSent) {
-        // Step 1: Request OTP
-        if (!userToLogin.mobile) {
+    // Dev mode: bypass OTP verification
+    if (isDevMode) {
+      login(userToLogin);
+      return;
+    }
+
+    // Production mode: require OTP verification
+    if (!otpSent) {
+      // Step 1: Request OTP
+      if (!userToLogin.mobile) {
+        toast({
+          title: "ไม่พบเบอร์โทรศัพท์",
+          description: "กรุณาติดต่อผู้ดูแลระบบเพื่อเพิ่มเบอร์โทรศัพท์",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate mobile number matches selected user
+      if (mobileNumber && mobileNumber !== userToLogin.mobile) {
+        // Mobile number changed, reset OTP state
+        setOtpSent(false);
+        setOtpCode('');
+      }
+
+      handleSendOtp(userToLogin.mobile);
+    } else {
+      // Step 2: Verify OTP code
+      if (!otpCode || otpCode.length !== 4) {
+        toast({
+          title: "รหัส OTP ไม่ถูกต้อง",
+          description: "กรุณากรอกรหัส OTP 4 หลัก",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate mobile number matches
+      if (mobileNumber !== userToLogin.mobile) {
+        toast({
+          title: "เกิดข้อผิดพลาด",
+          description: "เบอร์โทรศัพท์ไม่ตรงกับผู้ใช้งานที่เลือก",
+          variant: "destructive"
+        });
+        setOtpSent(false);
+        setOtpCode('');
+        setMobileNumber('');
+        return;
+      }
+
+      // Step 3: Verify OTP code with server
+      try {
+        const verifyResponse = await fetch(`${API_BASE_URL}/otp/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mobile_no: mobileNumber,
+            otp_code: otpCode
+          })
+        });
+
+        const verifyData = await verifyResponse.json();
+
+        if (!verifyResponse.ok || !verifyData.success) {
           toast({
-            title: "ไม่พบเบอร์โทรศัพท์",
-            description: "กรุณาติดต่อผู้ดูแลระบบเพื่อเพิ่มเบอร์โทรศัพท์",
+            title: "รหัส OTP ไม่ถูกต้อง",
+            description: verifyData.error || "กรุณาตรวจสอบรหัส OTP และลองใหม่อีกครั้ง",
             variant: "destructive"
           });
           return;
         }
-        const mobile = userToLogin.mobile;
-        handleSendOtp(mobile);
-      } else {
-        // Step 2: Verify OTP
-        if (otpCode.length < 4) return;
 
-        // Mock Verification
+        // OTP verified successfully
         toast({
           title: "เข้าสู่ระบบสำเร็จ",
           description: "ยืนยันตัวตนเรียบร้อยแล้ว",
-          variant: "default"
         });
+        
         login(userToLogin);
+      } catch (error: any) {
+        toast({
+          title: "เกิดข้อผิดพลาด",
+          description: error.message || "ไม่สามารถยืนยันรหัส OTP ได้ กรุณาลองใหม่อีกครั้ง",
+          variant: "destructive"
+        });
       }
-    } else {
-      // Standard Login
-      login(userToLogin);
     }
   };
 
@@ -266,7 +395,10 @@ const LoginPage = () => {
                     โหมดเข้าสู่ระบบด้วย OTP
                   </div>
                   {!otpSent ? (
-                    <p className="text-base text-cyan-600/90 leading-relaxed">ระบบจะส่งรหัส OTP ไปยังเบอร์โทรศัพท์ที่ท่านลงทะเบียนไว้ เพื่อยืนยันตัวตน</p>
+                    <div className="space-y-2">
+                      <p className="text-base text-cyan-600/90 leading-relaxed">ระบบจะส่งรหัส OTP ไปยังเบอร์โทรศัพท์ที่ท่านลงทะเบียนไว้ เพื่อยืนยันตัวตน</p>
+                      <p className="text-sm text-cyan-500/80 italic">กรุณาตรวจสอบ SMS ในโทรศัพท์ของคุณหลังจากกดส่ง OTP</p>
+                    </div>
                   ) : (
                     <div className="space-y-4 mt-3 animate-in slide-in-from-top-2">
                       <Label className="text-cyan-700 font-medium">กรอกรหัส OTP (4 หลัก)</Label>
@@ -280,9 +412,21 @@ const LoginPage = () => {
                         inputMode="numeric"
                         pattern="[0-9]*"
                       />
-                      <div className="flex justify-between items-center px-1">
-                        <p className="text-sm text-cyan-600 font-medium bg-cyan-100/50 px-2 py-1 rounded-md">ส่งไปยัง: {mobileNumber}</p>
-                        <button type="button" onClick={() => setOtpSent(false)} className="text-sm text-cyan-600 underline hover:text-cyan-800">ขอใหม่</button>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center px-1">
+                          <p className="text-sm text-cyan-600 font-medium bg-cyan-100/50 px-2 py-1 rounded-md">ส่งไปยัง: {mobileNumber}</p>
+                          <button type="button" onClick={() => {
+                            setOtpSent(false);
+                            setOtpCode('');
+                            setOtpResponse('');
+                          }} className="text-sm text-cyan-600 underline hover:text-cyan-800">ขอใหม่</button>
+                        </div>
+                        {otpResponse && (
+                          <details className="mt-2">
+                            <summary className="text-xs text-cyan-600 cursor-pointer hover:text-cyan-800">ดู Response จาก API {isDevMode ? '(Debug)' : ''}</summary>
+                            <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto max-h-32 border border-cyan-200 text-gray-700">{otpResponse}</pre>
+                          </details>
+                        )}
                       </div>
                     </div>
                   )}
