@@ -5,9 +5,10 @@ import { useAppContext } from '@/components/layout/AppProvider';
 import { findTargets, formatSalaryGroup } from '@/lib/helpers';
 import { ROLES, ROLE_LABELS } from '@/lib/constants';
 import type { Target, Role } from '@/lib/types';
-import { CheckCircle, ChevronRight, FileText, LogOut, Settings, UserCircle, AlertTriangle, Footprints } from 'lucide-react';
+import { CheckCircle, ChevronRight, FileText, LogOut, Settings, UserCircle, AlertTriangle, Footprints, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,6 +22,7 @@ import autoTable from 'jspdf-autotable';
 const AssessmentPage = () => {
   const { user, logout, navigateToGroup, scores, setView, navigateToIndividual, exclusions, allUsers, getCriteriaForUser, systemConfig, sendEvaluationEmail, comments } = useAppContext();
   const [isSendingEmail, setIsSendingEmail] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const isOutOfTime = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -192,7 +194,8 @@ const AssessmentPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-2">
             {(user.isAdmin || user.canViewReport) && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -256,6 +259,99 @@ const AssessmentPage = () => {
               <TooltipContent><p>ออกจากระบบ</p></TooltipContent>
             </Tooltip>
           </div>
+
+          {/* Mobile Menu */}
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-full hover:bg-gray-100">
+                <Menu className="h-5 w-5 text-gray-600" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="flex flex-col gap-2 mt-6">
+                {(user.isAdmin || user.canViewReport) && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setView('admin');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full justify-start gap-3 h-12 text-base"
+                  >
+                    <Settings className="h-5 w-5 text-indigo-600" />
+                    <span>{user.isAdmin ? 'แผงควบคุมผู้ดูแล' : 'จัดการการปรับฐานคะแนน'}</span>
+                  </Button>
+                )}
+                {canViewReport && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setView('progress');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full justify-start gap-3 h-12 text-base"
+                    >
+                      <Footprints className="h-5 w-5 text-purple-600" />
+                      <span>ความคืบหน้า</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setView('summary');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full justify-start gap-3 h-12 text-base"
+                    >
+                      <FileText className="h-5 w-5 text-emerald-600" />
+                      <span>รายงานสรุป</span>
+                    </Button>
+                  </>
+                )}
+                {systemConfig.sendEmailCopy && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      handleSendEmail();
+                      setIsMenuOpen(false);
+                    }}
+                    disabled={isSendingEmail}
+                    className="w-full justify-start gap-3 h-12 text-base"
+                  >
+                    {isSendingEmail ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                    ) : (
+                      <Mail className="h-5 w-5 text-blue-600" />
+                    )}
+                    <span>ส่งสำเนาเข้าเมลของฉัน</span>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setView('profile');
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full justify-start gap-3 h-12 text-base"
+                >
+                  <UserCircle className="h-5 w-5 text-blue-600" />
+                  <span>โปรไฟล์</span>
+                </Button>
+                <div className="border-t border-gray-200 my-2"></div>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full justify-start gap-3 h-12 text-base text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>ออกจากระบบ</span>
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </header>
 
         <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10">
