@@ -218,13 +218,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       //     evaluation_data: evaluationData
       //   })
       // });
-      const data = await res.json();
-      if (data.success) {
-        toast({ title: "Email Sent", description: "สำเนาผลการประเมินถูกส่งไปที่อีเมลของคุณแล้ว" });
-        return true;
-      } else {
-        throw new Error(data.error || "Failed to send email");
-      }
+      // const data = await res.json();
+      // if (data.success) {
+      //   toast({ title: "Email Sent", description: "สำเนาผลการประเมินถูกส่งไปที่อีเมลของคุณแล้ว" });
+      //   return true;
+      // } else {
+      //   throw new Error(data.error || "Failed to send email");
+      // }
     } catch (error: any) {
       console.error("Email Error:", error);
       toast({ variant: "destructive", title: "Email Failed", description: error.message || "ไม่สามารถส่งอีเมลได้" });
