@@ -28,6 +28,22 @@ const nextConfig = {
             bodySizeLimit: '2mb',
         },
     },
+    webpack: (config) => {
+        // Silence known third-party build-time warnings (Genkit/OpenTelemetry dependency graph)
+        // without affecting runtime behavior.
+        config.ignoreWarnings = [
+            ...(config.ignoreWarnings || []),
+            (warning) => {
+                const msg = typeof warning?.message === 'string' ? warning.message : '';
+                const resource = warning?.module?.resource || warning?.module?.identifier?.() || '';
+                return (
+                    msg.includes('Critical dependency: require function is used') &&
+                    String(resource).includes('require-in-the-middle')
+                );
+            },
+        ];
+        return config;
+    },
 };
 
 export default nextConfig;

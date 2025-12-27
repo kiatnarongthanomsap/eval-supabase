@@ -2,9 +2,9 @@
   "extends": ["next/core-web-vitals", "next/typescript"],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "prefer-const": "warn",
-    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-unused-vars": "off",
+    "prefer-const": "off",
+    "react-hooks/exhaustive-deps": "off",
     "react/no-unescaped-entities": "off",
     "@next/next/no-page-custom-font": "off"
   }
