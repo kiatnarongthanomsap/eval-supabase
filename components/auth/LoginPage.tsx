@@ -192,7 +192,7 @@ const LoginPage = () => {
         </Button>
       )}
 
-      <Card className="w-full max-w-md shadow-2xl shadow-cyan-100/50 border border-cyan-100/50 rounded-3xl overflow-hidden bg-white/95 backdrop-blur-xl">
+      <Card className={`w-full ${isDevMode ? 'max-w-6xl' : 'max-w-lg'} shadow-2xl shadow-cyan-100/50 border border-cyan-100/50 rounded-3xl overflow-hidden bg-white/95 backdrop-blur-xl`}>
         <CardHeader className="text-center pt-10 pb-6 bg-gradient-to-b from-cyan-50/50 to-transparent">
           <div className="bg-gradient-to-tr from-cyan-500 via-blue-500 to-sky-500 w-20 h-20 rounded-2xl rotate-3 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-cyan-500/30 transform transition-transform hover:rotate-6 hover:scale-105">
             <Network className="text-white w-10 h-10" />
@@ -210,6 +210,9 @@ const LoginPage = () => {
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-10">
+          <div className={`flex flex-col ${isDevMode ? 'lg:flex-row gap-8 lg:gap-10' : 'items-center'}`}>
+            {/* Left Side - Login Form */}
+            <div className={`${isDevMode ? 'flex-1 min-w-0 lg:w-1/2' : 'w-full'}`}>
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
@@ -304,64 +307,63 @@ const LoginPage = () => {
               </Button>
             </form>
           )}
-
-          {isDevMode && (
-            <div className="mt-8 pt-6 border-t border-cyan-100 animate-in fade-in zoom-in-95 duration-300">
-              <div className="flex items-center justify-between mb-4 px-1">
-                <div className="flex items-center gap-2 text-cyan-600">
-                  <Code className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Debug Mode: Quick Login</span>
-                </div>
-                <span className="text-[10px] bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-600 px-2 py-1 rounded-full font-mono border border-cyan-200">DEBUG</span>
-              </div>
-              <ScrollArea className="h-64 -mr-4 pr-4">
-                <div className="space-y-2 pb-2">
-                  {allUsers
-                    .filter(u => u.isActive)
-                    .sort((a, b) => {
-                      // 1. Committee Last
-                      const isCommitteeA = a.role === ROLES.COMMITTEE;
-                      const isCommitteeB = b.role === ROLES.COMMITTEE;
-                      if (isCommitteeA && !isCommitteeB) return 1;
-                      if (!isCommitteeA && isCommitteeB) return -1;
-
-                      // 2. Role Priority (Manager > Asst > Head > Staff)
-                      const rolePriority = [ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF];
-                      const priorityA = rolePriority.indexOf(a.role);
-                      const priorityB = rolePriority.indexOf(b.role);
-                      if (priorityA !== -1 && priorityB !== -1 && priorityA !== priorityB) {
-                        return priorityA - priorityB;
-                      }
-
-                      // 3. Name (Thai Alphabetical)
-                      return a.name.localeCompare(b.name, 'th');
-                    })
-                    .map(u => (
-                      <div
-                        key={u.internalId}
-                        onClick={() => login(u)}
-                        className="flex items-center gap-3 p-3 bg-white hover:bg-cyan-50 rounded-xl border border-cyan-100 hover:border-cyan-200 cursor-pointer transition-all active:scale-[0.99] group shadow-sm hover:shadow-md"
-                      >
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-cyan-100 transition-colors">
-                          <Image src={u.img} fill className="object-cover" alt={u.name} />
-                        </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="text-sm font-bold truncate text-gray-800 group-hover:text-cyan-700 transition-colors">
-                            {u.name}
-                            {u.isAdmin && <span className="ml-2 text-[9px] bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-1.5 py-0.5 rounded-md font-bold tracking-wide align-middle">ADMIN</span>}
-                          </div>
-                          <div className="text-xs text-gray-500 group-hover:text-gray-700 truncate flex items-center gap-1.5 mt-0.5">
-                            <span className="bg-cyan-50 px-1.5 py-0.5 rounded-md border border-cyan-200 text-[10px] font-medium group-hover:bg-cyan-100 group-hover:border-cyan-300 group-hover:text-cyan-700">{u.dept}</span>
-                            <span className="truncate">{u.position}</span>
-                          </div>
-                        </div>
-
-                      </div>
-                    ))}
-                </div>
-              </ScrollArea>
             </div>
-          )}
+
+            {/* Right Side - Debug Mode */}
+            {isDevMode && (
+              <div className="flex-1 min-w-0 lg:w-1/2 lg:border-l lg:pl-10 pt-6 lg:pt-0 animate-in fade-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <div className="flex items-center gap-2 text-cyan-600">
+                    <Code className="h-4 w-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Debug Mode: Quick Login</span>
+                  </div>
+                  <span className="text-[10px] bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-600 px-2 py-1 rounded-full font-mono border border-cyan-200">DEBUG</span>
+                </div>
+                <ScrollArea className="h-[500px] -mr-4 pr-4">
+                  <div className="grid grid-cols-2 gap-2 pb-2">
+                    {allUsers
+                      .filter(u => u.isActive)
+                      .sort((a, b) => {
+                        // 1. Role Priority (Manager > Asst > Head > Staff > Committee)
+                        const rolePriority = [ROLES.MANAGER, ROLES.ASST, ROLES.HEAD, ROLES.STAFF, ROLES.COMMITTEE];
+                        const priorityA = rolePriority.indexOf(a.role);
+                        const priorityB = rolePriority.indexOf(b.role);
+                        if (priorityA !== priorityB) {
+                          return priorityA - priorityB;
+                        }
+                        // 2. Then sort by position
+                        const positionCompare = a.position.localeCompare(b.position, 'th');
+                        if (positionCompare !== 0) {
+                          return positionCompare;
+                        }
+                        // 3. Finally sort by name (Thai Alphabetical)
+                        return a.name.localeCompare(b.name, 'th');
+                      })
+                      .map(u => (
+                        <div
+                          key={u.internalId}
+                          onClick={() => login(u)}
+                          className="flex items-center gap-2 p-2 bg-white hover:bg-cyan-50 rounded-xl border border-cyan-100 hover:border-cyan-200 cursor-pointer transition-all active:scale-[0.99] group shadow-sm hover:shadow-md"
+                        >
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm group-hover:border-cyan-100 transition-colors flex-shrink-0">
+                            <Image src={u.img} fill className="object-cover" alt={u.name} />
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <div className="text-xs font-bold truncate text-gray-800 group-hover:text-cyan-700 transition-colors leading-tight">
+                              {u.name}
+                              {u.isAdmin && <span className="ml-1 text-[8px] bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-1 py-0.5 rounded font-bold tracking-wide align-middle">A</span>}
+                            </div>
+                            <div className="text-[10px] text-gray-500 group-hover:text-gray-700 truncate mt-0.5 leading-tight">
+                              <span className="truncate block">{u.position}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

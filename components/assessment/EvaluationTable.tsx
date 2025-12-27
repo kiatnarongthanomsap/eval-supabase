@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppContext } from '@/components/layout/AppProvider';
 import { findTargets, calculateTotal } from '@/lib/helpers';
 import { CRITERIA_CATEGORIES, ROLE_LABELS } from '@/lib/constants';
@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 const EvaluationTable = () => {
   const { user, currentGroup, goBack, scores, updateScore, setScores, getCriteriaForUser, exclusions, allUsers, comments, updateComment, systemConfig } = useAppContext();
   const { toast } = useToast();
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
 
   const isOutOfTime = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -144,7 +145,10 @@ const EvaluationTable = () => {
       <main className="flex-1 overflow-hidden p-4 md:p-6">
         <TooltipProvider>
           <div className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-xl shadow-indigo-100 border border-white h-full overflow-hidden ring-1 ring-gray-950/5 flex flex-col">
-            <div className="overflow-auto flex-1 custom-scrollbar relative">
+            <div 
+              className="overflow-auto flex-1 custom-scrollbar relative"
+              onClick={() => setSelectedRow(null)}
+            >
               <table className="w-full border-separate border-spacing-0 min-w-[1200px]">
                 <thead>
                   <tr className="shadow-sm">
@@ -190,9 +194,27 @@ const EvaluationTable = () => {
                             </div>
                           </td>
                         </tr>
-                        {catCriteria.map(c => (
-                          <tr key={c.id} className="group hover:bg-indigo-100 transition-colors">
-                            <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
+                        {catCriteria.map((c, idx) => (
+                          <tr 
+                            key={c.id} 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedRow(selectedRow === c.id ? null : c.id);
+                            }}
+                            className={cn(
+                              "group transition-all cursor-pointer",
+                              "hover:bg-indigo-50 hover:shadow-sm",
+                              selectedRow === c.id 
+                                ? "bg-indigo-100 shadow-md border-l-4 border-indigo-500" 
+                                : idx % 2 === 0 
+                                  ? "bg-white" 
+                                  : "bg-gray-50/50"
+                            )}
+                          >
+                            <td className={cn(
+                              "p-6 text-sm font-medium sticky left-0 border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]",
+                              selectedRow === c.id ? "bg-indigo-100" : "bg-white"
+                            )}>
                               <div className="flex justify-between items-start gap-2">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -204,7 +226,13 @@ const EvaluationTable = () => {
                               </div>
                             </td>
                             {people.map(person => (
-                              <td key={`${person.internalId}-${c.id}`} className="p-3 text-center align-middle border-r border-b border-gray-100">
+                              <td 
+                                key={`${person.internalId}-${c.id}`} 
+                                className={cn(
+                                  "p-3 text-center align-middle border-r border-b border-gray-100 transition-colors",
+                                  selectedRow === c.id ? "bg-indigo-50" : ""
+                                )}
+                              >
                                 <div className="flex justify-center gap-1">
                                   {[1, 2, 3, 4].map(score => (
                                     <Button
