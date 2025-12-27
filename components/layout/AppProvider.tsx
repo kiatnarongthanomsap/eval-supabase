@@ -104,10 +104,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // This ensures the Assessment Table NEVER sees other people's data.
       // Global reports use 'fetchReportData' instead.
       const url = `${API_BASE_URL}/init${evaluatorId ? `?evaluator_id=${evaluatorId}` : ''}`;
-      console.log('refreshData: Fetching from URL:', url);
 
       const res = await fetch(url, { cache: 'no-store' });
-      console.log('refreshData: Response status:', res.status, res.statusText);
       if (!res.ok) {
         let errorMsg = `Failed to fetch initial data (${res.status} ${res.statusText})`;
         const contentType = res.headers.get('content-type');
@@ -166,10 +164,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (data.criteria && data.criteria.length > 0) setCriteria(data.criteria);
       if (data.exclusions) setExclusions(data.exclusions);
-
-      console.log('refreshData: Successfully loaded data, users count:', safeUsers.length);
     } catch (error) {
-      console.error("refreshData: API Error:", error);
+      console.error("API Error:", error);
       toast({
         variant: "destructive",
         title: "Connection Error",
@@ -183,8 +179,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         targetId: e.target_id,
         reason: e.reason
       })));
+      // Re-throw error so caller can handle it (e.g., for retry logic)
+      throw error;
     } finally {
-      console.log('refreshData: Setting isLoading to false');
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -242,10 +239,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Initial data load on mount only
   useEffect(() => {
     if (!hasInitializedRef.current) {
-      console.log('AppProvider: Initializing, calling refreshData...');
       hasInitializedRef.current = true;
       refreshData().catch(err => {
-        console.error('AppProvider: Error in initial refreshData:', err);
+        console.error('Error in initial refreshData:', err);
         hasInitializedRef.current = false; // Allow retry on error
       });
     }
