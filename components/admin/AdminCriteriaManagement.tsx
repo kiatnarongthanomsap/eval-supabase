@@ -108,7 +108,7 @@ const AdminCriteriaManagement = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">จัดการหลักเกณฑ์การประเมิน</h1>
+            <h1 className="text-3xl font-bold font-heading">จัดการหลักเกณฑ์การประเมิน</h1>
             <Card>
                 <CardHeader className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex flex-col space-y-1">

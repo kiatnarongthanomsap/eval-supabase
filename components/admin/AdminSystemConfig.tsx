@@ -53,7 +53,7 @@ const AdminSystemConfig = () => {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-extrabold font-headline tracking-tight text-slate-900 flex items-center gap-3">
+                    <h1 className="text-4xl font-extrabold font-heading tracking-tight text-slate-900 flex items-center gap-3">
                         <Settings className="w-10 h-10 text-primary" />
                         ตั้งค่าระบบ
                     </h1>
@@ -72,7 +72,7 @@ const AdminSystemConfig = () => {
                                     <Calendar className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-bold font-headline">ช่วงเวลาการประเมิน</CardTitle>
+                                    <CardTitle className="text-xl font-bold font-heading">ช่วงเวลาการประเมิน</CardTitle>
                                     <CardDescription>กำหนดกรอบเวลาสำหรับรอบการประเมินผลปัจจุบัน</CardDescription>
                                 </div>
                             </div>
@@ -115,7 +115,7 @@ const AdminSystemConfig = () => {
                                     <Mail className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-bold font-headline text-slate-800">การแจ้งเตือนและอีเมล</CardTitle>
+                                    <CardTitle className="text-xl font-bold font-heading text-slate-800">การแจ้งเตือนและอีเมล</CardTitle>
                                     <CardDescription>ตั้งค่าการส่งสรุปผลประเมินผ่าน Server</CardDescription>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@ const AdminSystemConfig = () => {
                         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6 pt-6">
                             <div className="flex items-center gap-3">
                                 <Database className="w-5 h-5 text-slate-700" />
-                                <CardTitle className="text-lg font-bold font-headline">จัดการข้อมูล</CardTitle>
+                                <CardTitle className="text-lg font-bold font-heading">จัดการข้อมูล</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
@@ -283,7 +283,7 @@ const AdminSystemConfig = () => {
                         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6 pt-6">
                             <div className="flex items-center gap-3">
                                 <ShieldAlert className="w-5 h-5 text-amber-600" />
-                                <CardTitle className="text-lg font-bold font-headline">ข้อยกเว้นการประเมิน</CardTitle>
+                                <CardTitle className="text-lg font-bold font-heading">ข้อยกเว้นการประเมิน</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
@@ -333,7 +333,7 @@ const AdminSystemConfig = () => {
                         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6 pt-6">
                             <div className="flex items-center gap-3">
                                 <History className="w-5 h-5 text-indigo-600" />
-                                <CardTitle className="text-lg font-bold font-headline">กิจกรรมล่าสุด</CardTitle>
+                                <CardTitle className="text-lg font-bold font-heading">กิจกรรมล่าสุด</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">

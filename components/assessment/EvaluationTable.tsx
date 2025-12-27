@@ -114,7 +114,7 @@ const EvaluationTable = () => {
       <header className="bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex items-center gap-4 flex-shrink-0 sticky top-0 z-30 border-b border-white/20 transition-all">
         <Button onClick={goBack} variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100"><ArrowLeft className="h-5 w-5 text-gray-600" /></Button>
         <div>
-          <h2 className="text-xl font-bold font-headline text-gray-800 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold font-heading text-gray-800 tracking-tight flex items-center gap-2">
             กำลังประเมินระดับ: <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md">{ROLE_LABELS[currentGroup as keyof typeof ROLE_LABELS] || currentGroup}</span>
           </h2>
           <p className="text-xs text-gray-500 font-medium mt-0.5">ประเภท: {people[0]?.type}</p>

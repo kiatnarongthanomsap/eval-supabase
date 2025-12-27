@@ -66,7 +66,7 @@ export const AssessmentCard = ({
                         )}
                     </div>
                 </div>
-                <CardTitle className="font-headline pt-5 truncate text-xl text-gray-800" title={groupLabel}>{groupLabel}</CardTitle>
+                <CardTitle className="font-heading pt-5 truncate text-xl text-gray-800" title={groupLabel}>{groupLabel}</CardTitle>
                 <CardDescription className="h-5 text-base font-medium opacity-80">{targets[0]?.dept || 'ตำแหน่ง'}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 min-h-0 flex flex-col px-6">

@@ -46,7 +46,7 @@ const PermissionsManagement = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">จัดการสิทธิ์การเข้าถึง</h1>
+            <h1 className="text-3xl font-bold font-heading">จัดการสิทธิ์การเข้าถึง</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>กำหนดสิทธิ์ผู้ใช้</CardTitle>

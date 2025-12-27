@@ -30,7 +30,7 @@ const ProfilePage = () => {
                         <Image src={user.img} width={100} height={100} className="w-28 h-28 rounded-full border-4 border-white shadow-lg bg-gray-100 object-cover" alt={user.name} />
                         <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full"></div>
                     </div>
-                    <CardTitle className="text-2xl font-bold font-headline text-gray-800 tracking-tight">{user.name}</CardTitle>
+                    <CardTitle className="text-2xl font-bold font-heading text-gray-800 tracking-tight">{user.name}</CardTitle>
                     <CardDescription className="text-gray-500 font-medium">{user.position}</CardDescription>
                 </CardHeader>
                 <CardContent className="px-8 pb-8">

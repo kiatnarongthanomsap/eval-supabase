@@ -180,7 +180,7 @@ const AssessmentPage = () => {
               <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white"></div>
             </div>
             <div>
-              <h1 className="text-xl font-bold font-headline text-gray-800 tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-bold font-heading text-gray-800 tracking-tight flex items-center gap-2">
                 สวัสดี, <span className="text-primary">{user.name}</span>
               </h1>
               <div className="flex items-center gap-2 mt-1">
@@ -376,7 +376,7 @@ const AssessmentPage = () => {
                   <span className="bg-white/20 p-1.5 rounded-lg"><CheckCircle className="h-4 w-4" /></span>
                   สถานะการประเมินภาพรวม
                 </span>
-                <span className="text-2xl font-bold font-headline tracking-tight drop-shadow-sm">{progressPercent}%</span>
+                <span className="text-2xl font-bold font-heading tracking-tight drop-shadow-sm">{progressPercent}%</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="relative z-10 pb-4">
@@ -390,7 +390,7 @@ const AssessmentPage = () => {
 
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h2 className="text-2xl text-gray-800 font-bold font-headline flex items-center gap-3">
+              <h2 className="text-2xl text-gray-800 font-bold font-heading flex items-center gap-3">
                 <span className="w-1.5 h-8 bg-primary rounded-full"></span>
                 รายการประเมินของคุณ
               </h2>

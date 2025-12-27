@@ -197,7 +197,7 @@ const LoginPage = () => {
           <div className="bg-gradient-to-tr from-cyan-500 via-blue-500 to-sky-500 w-20 h-20 rounded-2xl rotate-3 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-cyan-500/30 transform transition-transform hover:rotate-6 hover:scale-105">
             <Network className="text-white w-10 h-10" />
           </div>
-          <CardTitle className="font-headline text-3xl text-gray-800 tracking-tight bg-gradient-to-r from-cyan-600 via-blue-600 to-sky-600 bg-clip-text text-transparent">
+          <CardTitle className="font-heading text-3xl text-gray-800 tracking-tight bg-gradient-to-r from-cyan-600 via-blue-600 to-sky-600 bg-clip-text text-transparent">
             Performance Eval
           </CardTitle>
           <CardDescription className="text-base text-gray-600 mt-2 font-medium">

@@ -84,7 +84,7 @@ const ScoreAdjustmentTool = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">เครื่องมือแนะนำคะแนนโดย AI</h1>
+            <h1 className="text-3xl font-bold font-heading">เครื่องมือแนะนำคะแนนโดย AI</h1>
             <Card>
                 <CardHeader>
                     <CardTitle>วิเคราะห์คะแนนพนักงาน</CardTitle>

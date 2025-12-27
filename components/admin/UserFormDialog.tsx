@@ -56,7 +56,7 @@ export function UserFormDialog({ isOpen, onClose, onSave, user }: UserFormDialog
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] animate-fade-in-up">
         <DialogHeader>
-          <DialogTitle className="font-headline">{user ? 'แก้ไขข้อมูลผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}</DialogTitle>
+          <DialogTitle className="font-heading">{user ? 'แก้ไขข้อมูลผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           <div className="grid grid-cols-2 gap-4">

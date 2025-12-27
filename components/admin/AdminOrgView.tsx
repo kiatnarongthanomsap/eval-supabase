@@ -20,7 +20,7 @@ const AdminOrgView = () => {
     return (
         <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold font-headline">โครงสร้างองค์กร</h1>
+                <h1 className="text-3xl font-bold font-heading">โครงสร้างองค์กร</h1>
                 <p className="text-muted-foreground">ภาพรวมบุคลากรแยกตามแผนกและหน่วยงาน</p>
             </div>
 

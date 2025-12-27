@@ -34,3 +34,9 @@ next-env.d.ts
 
 *.php
 schema.sql
+
+# product/standalone build artifacts
+/product/standalone/node_modules/
+/product/standalone/.next/
+/product/standalone/out/
+/product/standalone/iisnode/

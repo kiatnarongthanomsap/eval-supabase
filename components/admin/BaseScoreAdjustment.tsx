@@ -53,7 +53,7 @@ const BaseScoreAdjustment = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">ปรับฐานคะแนน</h1>
+            <h1 className="text-3xl font-bold font-heading">ปรับฐานคะแนน</h1>
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

@@ -326,7 +326,7 @@ const SummaryPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex flex-col animate-fade-in font-sans">
       <header className="bg-white/80 backdrop-blur-md shadow-sm px-6 py-4 flex items-center gap-4 sticky top-0 z-20 border-b border-white/20 transition-all">
         <Button onClick={goBack} variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100"><ArrowLeft className="h-5 w-5 text-gray-600" /></Button>
-        <h1 className="text-xl font-bold font-headline text-gray-800 tracking-tight flex items-center gap-2">
+        <h1 className="text-xl font-bold font-heading text-gray-800 tracking-tight flex items-center gap-2">
           <span className="bg-primary/10 text-primary p-2 rounded-xl"><FileSpreadsheet className="w-5 h-5" /></span>
           รายงานสรุปผลการประเมิน
         </h1>

@@ -111,7 +111,7 @@ const IndividualEvaluation = () => {
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
           </div>
           <div>
-            <h2 className="font-bold font-headline text-lg text-gray-800 leading-tight">{currentPerson.name}</h2>
+            <h2 className="font-bold font-heading text-lg text-gray-800 leading-tight">{currentPerson.name}</h2>
             <p className="text-sm text-gray-500 font-medium">{currentPerson.position}</p>
           </div>
         </div>
