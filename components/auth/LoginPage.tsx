@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { APP_VERSION, ROLES, IS_DEBUG_DEFAULT, API_BASE_URL } from '@/lib/constants';
+import { APP_VERSION, ROLES, API_BASE_URL } from '@/lib/constants';
 import { formatSalaryGroup } from '@/lib/helpers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
@@ -23,7 +23,7 @@ const LoginPage = () => {
     // Only use default if systemConfig is not loaded yet AND we're still loading
     // Once loaded, use the actual value from DB (even if undefined/null)
     if (isLoading) {
-      return IS_DEBUG_DEFAULT; // Temporary default while loading
+      return false; // Temporary default while loading (safer for production)
     }
     // After loading, use DB value (default to false if not set)
     return systemConfig?.isDebug ?? false;

@@ -7,7 +7,7 @@ export const APP_VERSION = '3.0.0'; // Supabase Migration Version
 // Note: IS_DEBUG is now fetched from database (system_config.is_debug)
 // Use getIsDebug() helper or access from systemConfig in AppProvider context
 // Default fallback value
-//export const IS_DEBUG_DEFAULT = true; // Fallback if database value is not available
+export const IS_DEBUG_DEFAULT = false; // Fallback if database value is not available (safer for production)
 
 // Use Supabase API routes instead of PHP proxy
 // Note: In development use '/api', in production use '/kuscc-eval/api'
