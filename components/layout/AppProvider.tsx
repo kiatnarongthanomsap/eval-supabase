@@ -469,7 +469,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
       }
-      return { success: true, count: newUsers.length };
+      // Don't return value - type definition expects Promise<void>
     } catch (error) {
       console.error("Failed to import users", error);
       throw error;
