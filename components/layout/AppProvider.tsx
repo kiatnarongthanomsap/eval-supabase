@@ -470,9 +470,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (data.error) throw new Error(data.error);
       }
       return { success: true, count: newUsers.length };
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      return data;
     } catch (error) {
       console.error("Failed to import users", error);
       throw error;
