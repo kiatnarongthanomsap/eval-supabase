@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 import https from 'https';
+import { randomInt } from 'crypto';
 
 // Force dynamic rendering to prevent build-time execution
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mobile_no = searchParams.get('mobile_no');
+    const msgParam = searchParams.get('msg');
 
     if (!mobile_no) {
         return NextResponse.json({ error: 'Mobile number is required' }, { status: 400 });
@@ -20,7 +23,10 @@ export async function GET(request: Request) {
 
     // Updated configuration based on user's working example (2024-12-23)
     const apiUrl = 'https://apps3.coop.ku.ac.th/php/sms/otp.php';
-    const msg = 'OTP for Login'; // Default message
+    // If `msg` is provided, treat it as a plain SMS message (used by ProgressPage reminders).
+    // Otherwise, generate a 4-digit OTP and include it in the SMS body (used by Login OTP flow).
+    const otp = msgParam ? null : String(randomInt(1000, 10000));
+    const msg = msgParam || `รหัส OTP สำหรับเข้าสู่ระบบ: ${otp}`;
 
     const config = {
         method: 'get',
@@ -37,6 +43,9 @@ export async function GET(request: Request) {
         console.log("Sending OTP to:", mobile_no);
         const response = await axios.request(config);
         console.log('OTP API Response:', response.data);
+        // Keep response format backward-compatible with the frontend:
+        // return the raw provider response (usually a string).
+        // Never include the OTP value in the API response.
         return NextResponse.json(response.data);
     } catch (error: any) {
         console.error('OTP API Error:', error.message);
