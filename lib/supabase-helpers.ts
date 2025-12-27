@@ -264,6 +264,31 @@ export async function updateScore(
   return data;
 }
 
+export async function batchUpdateScores(
+  evaluatorId: string,
+  updates: Array<{ targetId: string; criteriaId: string; score: number }>
+) {
+  const supabase = getSupabase();
+  
+  // Prepare data for batch upsert
+  const dataToUpsert = updates.map(update => ({
+    evaluator_internal_id: evaluatorId,
+    target_internal_id: update.targetId,
+    criteria_id: update.criteriaId,
+    score: update.score,
+  }));
+
+  const { data, error } = await supabase
+    .from('evaluations')
+    .upsert(dataToUpsert, { 
+      onConflict: 'evaluator_internal_id,target_internal_id,criteria_id' 
+    })
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
 // ============================================
 // Comments Helpers
 // ============================================

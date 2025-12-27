@@ -21,7 +21,7 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 
 const EvaluationTable = () => {
-  const { user, currentGroup, goBack, scores, updateScore, setScores, getCriteriaForUser, exclusions, allUsers, comments, updateComment, systemConfig } = useAppContext();
+  const { user, currentGroup, goBack, scores, updateScore, batchUpdateScores, setScores, getCriteriaForUser, exclusions, allUsers, comments, updateComment, systemConfig } = useAppContext();
   const { toast } = useToast();
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
 
@@ -72,24 +72,27 @@ const EvaluationTable = () => {
       return;
     }
 
-    let updatedCount = 0;
-
-    // We strictly use sequential await to ensure we don't overwhelm the browser/server with parallel requests
-    // in a real app, a bulk update API endpoint is better.
+    // Collect all updates first
+    const updates: Array<{ personId: string; criteriaId: string; value: number }> = [];
+    
     for (const person of people) {
-      const criteria = getCriteriaForUser(person); // Use person-specific criteria in loop to be safe
+      const criteria = getCriteriaForUser(person);
       for (const c of criteria) {
         const currentScore = scores[person.internalId]?.[c.id];
         if (!currentScore) {
-          // Call the context function which handles API and Optimistic update
-          await updateScore(person.internalId, c.id, targetScore);
-          updatedCount++;
+          updates.push({
+            personId: person.internalId,
+            criteriaId: c.id,
+            value: targetScore
+          });
         }
       }
     }
 
-    if (updatedCount > 0) {
-      toast({ title: "บันทึกสำเร็จ", description: `ใส่คะแนน ${targetScore} ให้กับ ${updatedCount} ช่องที่ว่างแล้ว` });
+    if (updates.length > 0) {
+      // Use batch update for much better performance
+      await batchUpdateScores(updates);
+      toast({ title: "บันทึกสำเร็จ", description: `ใส่คะแนน ${targetScore} ให้กับ ${updates.length} ช่องที่ว่างแล้ว` });
     } else {
       toast({ title: "ไม่มีการเปลี่ยนแปลง", description: "ทุกช่องมีคะแนนอยู่แล้ว" });
     }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, createContext, useContext, ReactNode, useMemo, useEffect } from 'react';
+import React, { useState, createContext, useContext, ReactNode, useMemo, useEffect, useCallback, useRef } from 'react';
 import type {
   User,
   View,
@@ -44,6 +44,7 @@ interface AppContextType {
   navigateToIndividual: (person: Target) => void;
   goBack: () => void;
   updateScore: (personId: string, criteriaId: string, value: number) => void;
+  batchUpdateScores: (updates: Array<{ personId: string; criteriaId: string; value: number }>) => Promise<void>;
   setScores: React.Dispatch<React.SetStateAction<ScoreData>>;
   updateComment: (personId: string, value: string) => void;
   setView: React.Dispatch<React.SetStateAction<View>>;
@@ -92,8 +93,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const hasInitializedRef = useRef(false);
 
-  const refreshData = async (targetUser?: User | null) => {
+  const refreshData = useCallback(async (targetUser?: User | null) => {
     try {
       setIsLoading(true);
       const evaluatorId = targetUser?.internalId || user?.internalId;
@@ -102,8 +104,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // This ensures the Assessment Table NEVER sees other people's data.
       // Global reports use 'fetchReportData' instead.
       const url = `${API_BASE_URL}/init${evaluatorId ? `?evaluator_id=${evaluatorId}` : ''}`;
+      console.log('refreshData: Fetching from URL:', url);
 
       const res = await fetch(url, { cache: 'no-store' });
+      console.log('refreshData: Response status:', res.status, res.statusText);
       if (!res.ok) {
         let errorMsg = `Failed to fetch initial data (${res.status} ${res.statusText})`;
         const contentType = res.headers.get('content-type');
@@ -163,8 +167,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (data.criteria && data.criteria.length > 0) setCriteria(data.criteria);
       if (data.exclusions) setExclusions(data.exclusions);
 
+      console.log('refreshData: Successfully loaded data, users count:', safeUsers.length);
     } catch (error) {
-      console.error("API Error:", error);
+      console.error("refreshData: API Error:", error);
       toast({
         variant: "destructive",
         title: "Connection Error",
@@ -179,9 +184,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         reason: e.reason
       })));
     } finally {
+      console.log('refreshData: Setting isLoading to false');
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const fetchReportData = async (options?: { raw?: boolean }) => {
     try {
@@ -232,9 +239,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Initial data load on mount only
   useEffect(() => {
-    refreshData();
-  }, [view]);
+    if (!hasInitializedRef.current) {
+      console.log('AppProvider: Initializing, calling refreshData...');
+      hasInitializedRef.current = true;
+      refreshData().catch(err => {
+        console.error('AppProvider: Error in initial refreshData:', err);
+        hasInitializedRef.current = false; // Allow retry on error
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getCriteriaForUser = (targetUser: User | Target): Criteria[] => {
     // Determine the category based on role
@@ -332,6 +348,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
         title: "Save Error",
         description: "Failed to save score to server. Please check connection.",
       });
+    }
+  };
+
+  const batchUpdateScores = async (updates: Array<{ personId: string; criteriaId: string; value: number }>) => {
+    if (!user || updates.length === 0) return;
+
+    // Optimistic Update - update all scores in state immediately
+    setScores(prev => {
+      const newScores = { ...prev };
+      updates.forEach(({ personId, criteriaId, value }) => {
+        if (!newScores[personId]) {
+          newScores[personId] = {};
+        }
+        newScores[personId] = { ...newScores[personId], [criteriaId]: value };
+      });
+      return newScores;
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/score/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evaluatorId: user.internalId,
+          updates: updates.map(u => ({
+            targetId: u.personId,
+            criteriaId: u.criteriaId,
+            score: u.value
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Batch update failed');
+      }
+    } catch (error) {
+      console.error("Failed to batch save scores", error);
+      toast({
+        variant: "destructive",
+        title: "Save Error",
+        description: "Failed to save scores to server. Please check connection.",
+      });
+      // Revert optimistic update on error - reload scores from server
+      // In a production app, you might want to implement proper rollback
     }
   };
 
@@ -586,6 +646,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     navigateToIndividual,
     goBack,
     updateScore,
+    batchUpdateScores,
     setScores,
     updateComment,
     setView,

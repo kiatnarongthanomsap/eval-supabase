@@ -110,9 +110,9 @@ const SummaryPage = () => {
 
           // Check if this evaluator should evaluate target
           // Logic from findTargets reversed/reused:
-          // 1. Committee evaluates Manager, Asst, Head (if diff orgId)
+          // 1. Committee evaluates Manager, Asst (if diff orgId) - NOT Head
           if (evaluator.role === ROLES.COMMITTEE) {
-            if ([ROLES.MANAGER, ROLES.ASST, ROLES.HEAD].includes(target.role) && evaluator.orgId !== target.orgId) {
+            if ([ROLES.MANAGER, ROLES.ASST].includes(target.role) && evaluator.orgId !== target.orgId) {
               if (!isExcluded(evaluator.orgId, target.orgId, exclusions)) totalEvaluators++;
               return;
             }
