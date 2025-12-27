@@ -33,6 +33,7 @@ const LoginPage = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
@@ -134,7 +135,7 @@ const LoginPage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const userToLogin = allUsers.find(user => user.internalId === selectedUserId);
 
@@ -155,15 +156,54 @@ const LoginPage = () => {
         handleSendOtp(mobile);
       } else {
         // Step 2: Verify OTP
-        if (otpCode.length < 4) return;
+        if (otpCode.length < 4) {
+          toast({
+            title: "รหัส OTP ไม่ครบ",
+            description: "กรุณากรอกรหัส OTP 4 หลัก",
+            variant: "destructive"
+          });
+          return;
+        }
 
-        // Mock Verification
-        toast({
-          title: "เข้าสู่ระบบสำเร็จ",
-          description: "ยืนยันตัวตนเรียบร้อยแล้ว",
-          variant: "default"
-        });
-        login(userToLogin);
+        setIsVerifyingOtp(true);
+        try {
+          const res = await fetch(`${API_BASE_URL}/otp/verify`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              mobile_no: mobileNumber,
+              otp_code: otpCode,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            toast({
+              title: "เข้าสู่ระบบสำเร็จ",
+              description: "ยืนยันตัวตนเรียบร้อยแล้ว",
+              variant: "default"
+            });
+            login(userToLogin);
+          } else {
+            toast({
+              title: "รหัส OTP ไม่ถูกต้อง",
+              description: data.error || "กรุณาลองใหม่อีกครั้ง",
+              variant: "destructive"
+            });
+          }
+        } catch (error: any) {
+          console.error('OTP verification error:', error);
+          toast({
+            title: "เกิดข้อผิดพลาด",
+            description: error.message || "ไม่สามารถตรวจสอบรหัส OTP ได้ กรุณาลองใหม่อีกครั้ง",
+            variant: "destructive"
+          });
+        } finally {
+          setIsVerifyingOtp(false);
+        }
       }
     } else {
       // Standard Login
@@ -293,17 +333,22 @@ const LoginPage = () => {
                 type="submit"
                 className="w-full h-14 text-lg font-bold rounded-2xl shadow-lg transition-all transform active:scale-[0.98] bg-gradient-to-r from-cyan-500 via-blue-500 to-sky-500 hover:from-cyan-600 hover:via-blue-600 hover:to-sky-600 shadow-cyan-500/30 hover:shadow-cyan-500/50 text-white"
                 size="lg"
-                disabled={!selectedUserId || isSendingOtp || (!isDevMode && otpSent && otpCode.length < 4)}
+                disabled={!selectedUserId || isSendingOtp || isVerifyingOtp || (!isDevMode && otpSent && otpCode.length < 4)}
               >
                 {isSendingOtp ? (
                   <span className="flex items-center gap-2">
                     <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/80"></span>
                     กำลังส่ง OTP...
                   </span>
+                ) : isVerifyingOtp ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/80"></span>
+                    กำลังยืนยันรหัส OTP...
+                  </span>
                 ) : (
                   (!isDevMode ? (otpSent ? "ยืนยันรหัส OTP" : "ขอรับรหัส OTP") : "เข้าสู่ระบบ")
                 )}
-                {!isSendingOtp && <ChevronRight className="ml-2 h-6 w-6 opacity-80" />}
+                {!isSendingOtp && !isVerifyingOtp && <ChevronRight className="ml-2 h-6 w-6 opacity-80" />}
               </Button>
             </form>
           )}
