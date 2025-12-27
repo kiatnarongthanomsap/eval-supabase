@@ -204,9 +204,9 @@ const LoginPage = () => {
             ระบบประเมินผลการปฏิบัติงานเจ้าหน้าที่ สอ.มก.
           </CardDescription>
           <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-cyan-100 to-blue-100 rounded-full border border-cyan-200/50">
-            <span className="text-xs font-semibold text-cyan-700">v{APP_VERSION}</span>
-            <span className="text-xs text-cyan-600">•</span>
-            <span className="text-xs text-blue-600">Supabase Edition</span>
+            <span className="text-sm font-semibold text-cyan-700">v{APP_VERSION}</span>
+            <span className="text-sm text-cyan-600">•</span>
+            <span className="text-sm text-blue-600">Supabase Edition</span>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-10">
@@ -216,7 +216,7 @@ const LoginPage = () => {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
-              <p className="text-muted-foreground text-sm font-medium animate-pulse">กำลังเชื่อมต่อฐานข้อมูล...</p>
+              <p className="text-muted-foreground text-base font-medium animate-pulse">กำลังเชื่อมต่อฐานข้อมูล...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -249,8 +249,8 @@ const LoginPage = () => {
                             <Image src={u.img} fill className="object-cover" alt={u.name} />
                           </div>
                           <div className="flex flex-col text-left">
-                            <span className="font-medium text-gray-900 text-sm">{u.name}</span>
-                            <span className="text-xs text-gray-500">{u.position}</span>
+                            <span className="font-medium text-gray-900 text-base">{u.name}</span>
+                            <span className="text-sm text-gray-500">{u.position}</span>
                           </div>
                         </div>
                       </SelectItem>
@@ -266,7 +266,7 @@ const LoginPage = () => {
                     โหมดเข้าสู่ระบบด้วย OTP
                   </div>
                   {!otpSent ? (
-                    <p className="text-sm text-cyan-600/90 leading-relaxed">ระบบจะส่งรหัส OTP ไปยังเบอร์โทรศัพท์ที่ท่านลงทะเบียนไว้ เพื่อยืนยันตัวตน</p>
+                    <p className="text-base text-cyan-600/90 leading-relaxed">ระบบจะส่งรหัส OTP ไปยังเบอร์โทรศัพท์ที่ท่านลงทะเบียนไว้ เพื่อยืนยันตัวตน</p>
                   ) : (
                     <div className="space-y-4 mt-3 animate-in slide-in-from-top-2">
                       <Label className="text-cyan-700 font-medium">กรอกรหัส OTP (4 หลัก)</Label>
@@ -281,8 +281,8 @@ const LoginPage = () => {
                         pattern="[0-9]*"
                       />
                       <div className="flex justify-between items-center px-1">
-                        <p className="text-xs text-cyan-600 font-medium bg-cyan-100/50 px-2 py-1 rounded-md">ส่งไปยัง: {mobileNumber}</p>
-                        <button type="button" onClick={() => setOtpSent(false)} className="text-xs text-cyan-600 underline hover:text-cyan-800">ขอใหม่</button>
+                        <p className="text-sm text-cyan-600 font-medium bg-cyan-100/50 px-2 py-1 rounded-md">ส่งไปยัง: {mobileNumber}</p>
+                        <button type="button" onClick={() => setOtpSent(false)} className="text-sm text-cyan-600 underline hover:text-cyan-800">ขอใหม่</button>
                       </div>
                     </div>
                   )}
@@ -315,9 +315,9 @@ const LoginPage = () => {
                 <div className="flex items-center justify-between mb-4 px-1">
                   <div className="flex items-center gap-2 text-cyan-600">
                     <Code className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Debug Mode: Quick Login</span>
+                    <span className="text-sm font-bold uppercase tracking-wider">Debug Mode: Quick Login</span>
                   </div>
-                  <span className="text-[10px] bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-600 px-2 py-1 rounded-full font-mono border border-cyan-200">DEBUG</span>
+                  <span className="text-xs bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-600 px-2 py-1 rounded-full font-mono border border-cyan-200">DEBUG</span>
                 </div>
                 <ScrollArea className="h-[500px] -mr-4 pr-4">
                   <div className="grid grid-cols-2 gap-2 pb-2">
@@ -349,11 +349,11 @@ const LoginPage = () => {
                             <Image src={u.img} fill className="object-cover" alt={u.name} />
                           </div>
                           <div className="flex-1 min-w-0 text-left">
-                            <div className="text-xs font-bold truncate text-gray-800 group-hover:text-cyan-700 transition-colors leading-tight">
+                            <div className="text-sm font-bold truncate text-gray-800 group-hover:text-cyan-700 transition-colors leading-tight">
                               {u.name}
-                              {u.isAdmin && <span className="ml-1 text-[8px] bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-1 py-0.5 rounded font-bold tracking-wide align-middle">A</span>}
+                              {u.isAdmin && <span className="ml-1 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-1 py-0.5 rounded font-bold tracking-wide align-middle">A</span>}
                             </div>
-                            <div className="text-[10px] text-gray-500 group-hover:text-gray-700 truncate mt-0.5 leading-tight">
+                            <div className="text-xs text-gray-500 group-hover:text-gray-700 truncate mt-0.5 leading-tight">
                               <span className="truncate block">{u.position}</span>
                             </div>
                           </div>

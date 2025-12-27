@@ -268,8 +268,8 @@ const ProgressPage = () => {
                         แจ้งเตือน SMS ({incompleteUsers.length})
                     </Button>
                     <div className="text-right hidden md:block">
-                        <div className="text-sm font-bold text-gray-700">ภาพรวมทั้งองค์กร</div>
-                        <div className="text-xs text-gray-500">{totalProgress}% ผู้ประเมินเสร็จสิ้น</div>
+                        <div className="text-base font-bold text-gray-700">ภาพรวมทั้งองค์กร</div>
+                        <div className="text-sm text-gray-500">{totalProgress}% ผู้ประเมินเสร็จสิ้น</div>
                     </div>
                     <div className="w-32 hidden md:block">
                         <Progress value={totalProgress} className="h-2" />
@@ -286,7 +286,7 @@ const ProgressPage = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                        <label className="text-sm font-medium mb-2 block">ข้อความ:</label>
+                        <label className="text-base font-medium mb-2 block">ข้อความ:</label>
                         <Textarea
                             value={smsMessage}
                             onChange={(e) => setSmsMessage(e.target.value)}
@@ -346,21 +346,21 @@ const ProgressPage = () => {
                             <div className="flex p-1 bg-white ring-1 ring-gray-200 rounded-2xl shadow-sm">
                                 <button
                                     onClick={() => setStatusFilter('all')}
-                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                    className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
                                 >
-                                    ทั้งหมด <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'all' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.all}</span>
+                                    ทั้งหมด <span className={`px-1.5 py-0.5 rounded-md text-xs ${statusFilter === 'all' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.all}</span>
                                 </button>
                                 <button
                                     onClick={() => setStatusFilter('done')}
-                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'done' ? 'bg-green-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                    className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${statusFilter === 'done' ? 'bg-green-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
                                 >
-                                    ครบ <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'done' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.done}</span>
+                                    ครบ <span className={`px-1.5 py-0.5 rounded-md text-xs ${statusFilter === 'done' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.done}</span>
                                 </button>
                                 <button
                                     onClick={() => setStatusFilter('pending')}
-                                    className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${statusFilter === 'pending' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                                    className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${statusFilter === 'pending' ? 'bg-amber-500 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
                                 >
-                                    ไม่ครบ <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'pending' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.pending}</span>
+                                    ไม่ครบ <span className={`px-1.5 py-0.5 rounded-md text-xs ${statusFilter === 'pending' ? 'bg-white/20' : 'bg-gray-100'}`}>{stats.pending}</span>
                                 </button>
                             </div>
                             <div className="relative flex-1 md:w-64">
@@ -403,16 +403,16 @@ const ProgressPage = () => {
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-0.5">
-                                                <h4 className="text-sm font-bold text-gray-900 truncate pr-2">{user.name}</h4>
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${user.isDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                <h4 className="text-base font-bold text-gray-900 truncate pr-2">{user.name}</h4>
+                                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${user.isDone ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                                                     {user.progress}%
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-gray-500 truncate mb-2">{user.position} <span className="mx-1">•</span> {user.peopleTotal} คนที่ต้องประเมิน</p>
+                                            <p className="text-sm text-gray-500 truncate mb-2">{user.position} <span className="mx-1">•</span> {user.peopleTotal} คนที่ต้องประเมิน</p>
 
                                             <div className="flex items-center gap-2">
                                                 <Progress value={user.progress} className={`h-1.5 flex-1 ${user.isDone ? "[&>div]:bg-green-500 bg-green-100" : "[&>div]:bg-purple-500 bg-purple-50"}`} />
-                                                <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{user.peopleCompleted}/{user.peopleTotal} คน</span>
+                                                <span className="text-xs text-gray-400 font-medium whitespace-nowrap">{user.peopleCompleted}/{user.peopleTotal} คน</span>
                                             </div>
                                         </div>
                                     </div>

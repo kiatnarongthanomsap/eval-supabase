@@ -265,27 +265,27 @@ const AssessmentPage = () => {
                 <AlertTriangle className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-amber-900 font-bold text-sm">อยู่นอกช่วงเวลาการประเมิน</h3>
-                <p className="text-amber-700 text-xs">คุณสามารถเรียกดูข้อมูลย้อนหลังได้ แต่จะไม่สามารถแก้ไขคะแนนหรือความคิดเห็นได้ในขณะนี้</p>
+                <h3 className="text-amber-900 font-bold text-base">อยู่นอกช่วงเวลาการประเมิน</h3>
+                <p className="text-amber-700 text-sm">คุณสามารถเรียกดูข้อมูลย้อนหลังได้ แต่จะไม่สามารถแก้ไขคะแนนหรือความคิดเห็นได้ในขณะนี้</p>
               </div>
             </div>
           )}
 
           {/* Stats Card */}
-          <Card className="bg-gradient-to-r from-indigo-600 to-primary text-white shadow-xl shadow-indigo-500/20 rounded-3xl overflow-hidden border-0 relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-            <CardHeader className="pb-2 relative z-10">
+          <Card className="bg-gradient-to-r from-indigo-600 to-primary text-white shadow-xl shadow-indigo-500/20 rounded-2xl overflow-hidden border-0 relative">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-12 -mt-12 pointer-events-none"></div>
+            <CardHeader className="pb-2 pt-4 relative z-10">
               <CardTitle className="flex justify-between items-center">
-                <span className="flex items-center gap-3 text-lg font-medium opacity-90">
-                  <span className="bg-white/20 p-2 rounded-lg"><CheckCircle className="h-5 w-5" /></span>
+                <span className="flex items-center gap-2 text-sm font-medium opacity-90">
+                  <span className="bg-white/20 p-1.5 rounded-lg"><CheckCircle className="h-4 w-4" /></span>
                   สถานะการประเมินภาพรวม
                 </span>
-                <span className="text-4xl font-bold font-headline tracking-tight drop-shadow-sm">{progressPercent}%</span>
+                <span className="text-2xl font-bold font-headline tracking-tight drop-shadow-sm">{progressPercent}%</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <Progress value={progressPercent} className="h-4 bg-black/20 rounded-full backdrop-blur-sm" indicatorClassName="bg-gradient-to-r from-emerald-300 to-emerald-400" />
-              <div className="flex justify-between text-white/80 text-sm mt-3 font-medium">
+            <CardContent className="relative z-10 pb-4">
+              <Progress value={progressPercent} className="h-2.5 bg-black/20 rounded-full backdrop-blur-sm" indicatorClassName="bg-gradient-to-r from-emerald-300 to-emerald-400" />
+              <div className="flex justify-between text-white/80 text-sm mt-2 font-medium">
                 <span>ผู้ที่ต้องประเมินทั้งหมด <span className="text-white font-bold">{allTargets.length}</span> คน</span>
                 <span>ประเมินเสร็จแล้ว <span className="text-white font-bold">{completedPeople}</span> คน</span>
               </div>
@@ -306,7 +306,7 @@ const AssessmentPage = () => {
                   <CheckCircle className="h-10 w-10" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-500">ดีเยี่ยม! คุณไม่มีรายการที่ต้องประเมินแล้ว</h3>
-                <p className="text-sm mt-1 opacity-70">คุณได้ดำเนินการครบถ้วนสมบูรณ์</p>
+                <p className="text-base mt-1 opacity-70">คุณได้ดำเนินการครบถ้วนสมบูรณ์</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

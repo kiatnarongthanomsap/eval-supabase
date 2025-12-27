@@ -382,24 +382,24 @@ const SummaryPage = () => {
                           <Image src={e.img} width={44} height={44} className="w-11 h-11 rounded-full border-2 border-white shadow-sm bg-gray-100 object-cover" alt={e.name} />
                           <div>
                             <p className="font-bold text-gray-800 group-hover:text-primary transition-colors">{e.name}</p>
-                            <p className="text-xs text-gray-500">{e.position} <span className="text-gray-300 mx-1">|</span> {e.dept}</p>
+                            <p className="text-sm text-gray-500">{e.position} <span className="text-gray-300 mx-1">|</span> {e.dept}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600 font-medium text-sm">{formatSalaryGroup(e.salaryGroup)}</TableCell>
+                      <TableCell className="text-gray-600 font-medium text-base">{formatSalaryGroup(e.salaryGroup)}</TableCell>
                       <TableCell className="text-center">
                         {e.finalScore > 0 ? (
                           <div className="flex flex-col items-center">
                             <span className="inline-block font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded-lg min-w-[4rem]">{e.finalScore.toFixed(2)}%</span>
-                            <span className="text-[10px] text-gray-400 mt-1 font-medium">จาก {e.evaluatorCount}/{e.totalEvaluators} คน</span>
+                            <span className="text-xs text-gray-400 mt-1 font-medium">จาก {e.evaluatorCount}/{e.totalEvaluators} คน</span>
                           </div>
                         ) : <span className="text-gray-300">-</span>}
                       </TableCell>
                       <TableCell className="text-center">
                         {e.isDone ? <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${e.levelColor} shadow-sm`}>{e.levelLabel}</span> : <span className="text-gray-300">-</span>}
                       </TableCell>
-                      <TableCell className="text-sm text-gray-500 max-w-xs truncate opacity-70 group-hover:opacity-100 transition-opacity">
-                        <div className="text-xs text-gray-500 max-w-[200px] truncate" title="คลิกเพื่อดูรายละเอียด">
+                      <TableCell className="text-base text-gray-500 max-w-xs truncate opacity-70 group-hover:opacity-100 transition-opacity">
+                        <div className="text-sm text-gray-500 max-w-[200px] truncate" title="คลิกเพื่อดูรายละเอียด">
                           {e.comment === 'HIDDEN_SELF' ?
                             <span className="text-gray-400 italic flex items-center gap-1"><Shield className="w-3 h-3" /> สงวนสิทธิ์การเข้าถึง</span>
                             : (Array.isArray(e.comment) ? e.comment.length + " ความเห็น" : e.comment)}

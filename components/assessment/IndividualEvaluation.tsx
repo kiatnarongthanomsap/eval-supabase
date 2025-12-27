@@ -112,7 +112,7 @@ const IndividualEvaluation = () => {
           </div>
           <div>
             <h2 className="font-bold font-headline text-lg text-gray-800 leading-tight">{currentPerson.name}</h2>
-            <p className="text-xs text-gray-500 font-medium">{currentPerson.position}</p>
+            <p className="text-sm text-gray-500 font-medium">{currentPerson.position}</p>
           </div>
         </div>
       </header>
@@ -124,8 +124,8 @@ const IndividualEvaluation = () => {
                 <AlertTriangle className="h-5 w-5 text-yellow-700" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold">นอกช่วงเวลาการประเมิน</CardTitle>
-                <CardDescription className="text-yellow-700 text-xs">ไม่สามารถแก้ไขหรือบันทึกข้อมูลได้</CardDescription>
+                <CardTitle className="text-base font-bold">นอกช่วงเวลาการประเมิน</CardTitle>
+                <CardDescription className="text-yellow-700 text-sm">ไม่สามารถแก้ไขหรือบันทึกข้อมูลได้</CardDescription>
               </div>
             </CardHeader>
           </Card>
@@ -137,7 +137,7 @@ const IndividualEvaluation = () => {
 
             return (
               <div key={cat.id} className="space-y-4">
-                <div className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-2", cat.color)}>
+                <div className={cn("px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center gap-2 mb-2", cat.color)}>
                   <span className="w-2 h-2 rounded-full bg-current opacity-50"></span>
                   {cat.name}
                 </div>
@@ -146,7 +146,7 @@ const IndividualEvaluation = () => {
                     <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                       <div className="flex justify-between items-start">
                         <div className="flex gap-3">
-                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mt-0.5">{personCriteria.indexOf(c) + 1}</span>
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold mt-0.5">{personCriteria.indexOf(c) + 1}</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <CardTitle className="text-base font-bold text-gray-800 cursor-help leading-snug">{c.text}</CardTitle>
@@ -154,11 +154,11 @@ const IndividualEvaluation = () => {
                             <TooltipContent side="bottom" className="max-w-xs p-3 bg-gray-900 text-white border-0"><p>{c.description}</p></TooltipContent>
                           </Tooltip>
                         </div>
-                        <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-md">WT: {c.weight}</span>
+                        <span className="text-sm font-bold bg-gray-100 text-gray-500 px-2 py-1 rounded-md">WT: {c.weight}</span>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-4 px-4 pb-5">
-                      <p className="text-xs text-gray-500 mb-4 px-1">{c.description}</p>
+                      <p className="text-sm text-gray-500 mb-4 px-1">{c.description}</p>
                       <div className="grid grid-cols-4 gap-3">
                         {[1, 2, 3, 4].map(s => (
                           <Button

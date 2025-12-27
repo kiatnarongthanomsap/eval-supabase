@@ -168,10 +168,10 @@ const EvaluationTable = () => {
                             </div>
                           </div>
                           <div className="flex flex-col items-center">
-                            <p className="font-bold text-gray-800 text-sm truncate max-w-[160px]">{person.name}</p>
+                            <p className="font-bold text-gray-800 text-base truncate max-w-[160px]">{person.name}</p>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <p className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[150px] cursor-help mt-1">
+                                <p className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[150px] cursor-help mt-1">
                                   {user?.dept !== person.dept ? `${person.position} - ${person.dept}` : person.position}
                                 </p>
                               </TooltipTrigger>
@@ -215,7 +215,7 @@ const EvaluationTable = () => {
                             )}
                           >
                             <td className={cn(
-                              "p-6 text-sm font-medium sticky left-0 border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]",
+                              "p-6 text-base font-medium sticky left-0 border-r border-b border-gray-100 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]",
                               selectedRow === c.id ? "bg-indigo-100" : "bg-white"
                             )}>
                               <div className="flex justify-between items-start gap-2">
@@ -225,7 +225,7 @@ const EvaluationTable = () => {
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="max-w-md p-4 text-sm bg-gray-900 text-white border-0 shadow-xl"><p>{c.description}</p></TooltipContent>
                                 </Tooltip>
-                                <Badge variant="secondary" className="ml-1 shrink-0 bg-gray-100 text-gray-500 font-mono text-[10px]">x{c.weight}</Badge>
+                                <Badge variant="secondary" className="ml-1 shrink-0 bg-gray-100 text-gray-500 font-mono text-xs">x{c.weight}</Badge>
                               </div>
                             </td>
                             {people.map(person => (
@@ -261,7 +261,7 @@ const EvaluationTable = () => {
                   })}
                   {/* Total Score Row */}
                   <tr className="bg-gray-50 font-bold">
-                    <td className="p-6 text-sm sticky left-0 bg-gray-50 border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
+                    <td className="p-6 text-base sticky left-0 bg-gray-50 border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)]">
                       <span className="text-gray-800">คะแนนรวม (ปรับตามน้ำหนัก)</span>
                     </td>
                     {people.map(person => (
@@ -272,7 +272,7 @@ const EvaluationTable = () => {
                   </tr>
                   {/* Comment Row */}
                   <tr className="bg-white">
-                    <td className="p-6 text-sm font-medium sticky left-0 bg-white border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] align-top pt-8">
+                    <td className="p-6 text-base font-medium sticky left-0 bg-white border-r border-b border-gray-200 z-[20] w-[320px] min-w-[320px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] align-top pt-8">
                       <span className="text-gray-700">ความคิดเห็นผู้ประเมิน</span>
                     </td>
                     {people.map(person => (

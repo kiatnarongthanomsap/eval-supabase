@@ -60,14 +60,14 @@ export const AssessmentCard = ({
                             </Badge>
                         ) : (
                             <div className="flex flex-col items-end">
-                                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">จำนวน</p>
-                                <p className="font-bold text-2xl text-gray-800 leading-none mt-1">{targets.length} <span className="text-sm font-normal text-gray-400">คน</span></p>
+                                <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">จำนวน</p>
+                                <p className="font-bold text-2xl text-gray-800 leading-none mt-1">{targets.length} <span className="text-base font-normal text-gray-400">คน</span></p>
                             </div>
                         )}
                     </div>
                 </div>
                 <CardTitle className="font-headline pt-5 truncate text-xl text-gray-800" title={groupLabel}>{groupLabel}</CardTitle>
-                <CardDescription className="h-5 text-sm font-medium opacity-80">{targets[0]?.dept || 'ตำแหน่ง'}</CardDescription>
+                <CardDescription className="h-5 text-base font-medium opacity-80">{targets[0]?.dept || 'ตำแหน่ง'}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 min-h-0 flex flex-col px-6">
                 {/* Mobile View */}
@@ -82,7 +82,7 @@ export const AssessmentCard = ({
                                 <Image src={t.img} width={48} height={48} className="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover" alt={t.name} />
                                 <div className="flex-1 min-w-0">
                                     <div className="text-base font-bold text-gray-800 truncate">{t.name}</div>
-                                    <div className="text-xs text-gray-500 truncate flex items-center gap-2 mt-0.5">
+                                    <div className="text-sm text-gray-500 truncate flex items-center gap-2 mt-0.5">
                                         <span className="font-medium bg-white px-2 py-0.5 rounded-md border border-gray-200">{t.position}</span>
                                     </div>
                                 </div>
@@ -103,7 +103,7 @@ export const AssessmentCard = ({
                         const totalScore = Math.round(calculateTotal(t.internalId, scores, personCriteria));
 
                         return (
-                            <div key={t.internalId} onClick={() => navigateToIndividual(t)} className="flex items-center gap-3 text-sm justify-between group hover:bg-slate-50 p-2 rounded-xl transition-all cursor-pointer border border-transparent hover:border-slate-100 active:scale-[0.98]">
+                            <div key={t.internalId} onClick={() => navigateToIndividual(t)} className="flex items-center gap-3 text-base justify-between group hover:bg-slate-50 p-2 rounded-xl transition-all cursor-pointer border border-transparent hover:border-slate-100 active:scale-[0.98]">
                                 <div className="flex items-center gap-3 min-w-0 overflow-hidden">
                                     <Image
                                         src={t.img}
@@ -114,11 +114,11 @@ export const AssessmentCard = ({
                                     />
                                     <div className="min-w-0">
                                         <div className={`font-bold truncate ${isDone ? 'text-emerald-700' : 'text-gray-700'}`}>{t.name}</div>
-                                        <div className="text-xs text-muted-foreground truncate opacity-80">{t.position}</div>
+                                        <div className="text-sm text-muted-foreground truncate opacity-80">{t.position}</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    {totalScore > 0 && <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md">{totalScore}</span>}
+                                    {totalScore > 0 && <span className="text-sm font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md">{totalScore}</span>}
                                     {isDone && <CheckCircle className="h-4 w-4 text-emerald-500" />}
                                 </div>
                             </div>
@@ -126,7 +126,7 @@ export const AssessmentCard = ({
                     })}
                     {targets.length > 4 && (
                         <div className="text-center py-2 sticky bottom-0 bg-gradient-to-t from-white via-white/90 to-transparent pt-4">
-                            <span className="text-[10px] text-gray-400 font-medium px-3 py-1 bg-gray-50 rounded-full flex items-center justify-center gap-1 mx-auto w-fit animate-pulse border border-gray-100">
+                            <span className="text-xs text-gray-400 font-medium px-3 py-1 bg-gray-50 rounded-full flex items-center justify-center gap-1 mx-auto w-fit animate-pulse border border-gray-100">
                                 <ChevronDown className="h-3 w-3" /> เลื่อนเพื่อดูเพิ่มเติม ({targets.length - 4})
                             </span>
                         </div>
