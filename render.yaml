@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: hr-evaluation-app
+    runtime: node
+    plan: free  # หรือ starter, standard, pro ตามต้องการ
+    region: singapore  # หรือ tokyo, oregon, frankfurt, etc.
+    branch: main  # หรือ branch ที่ต้องการ deploy
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      # ตั้งค่า Environment Variables ใน Render Dashboard แทน
+      # เพราะต้องการค่า sensitive (keys) ที่ไม่ควร commit
+      # - key: NEXT_PUBLIC_SUPABASE_URL
+      #   value: https://fcezmzydokhxlajxaxdq.supabase.co
+      # - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+      #   value: your_anon_key_here
+      
+      # Optional: ตั้งค่า basePath ถ้าต้องการใช้ subpath
+      # - key: NEXT_PUBLIC_BASE_PATH
+      #   value: /kuscc-eval
+      
+      # Optional: สำหรับ server-side operations
+      # - key: SUPABASE_SERVICE_ROLE_KEY
+      #   value: your_service_role_key_here
+      
+      # Node environment
+      - key: NODE_ENV
+        value: production
+

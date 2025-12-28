@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
-    // Only use basePath in production
-    basePath: process.env.NODE_ENV === 'production' ? '/kuscc-eval' : '',
+    // basePath: กำหนดจาก environment variable หรือใช้ค่าเดิมสำหรับ production
+    // สำหรับ Render.com: ไม่ต้องตั้ง NEXT_PUBLIC_BASE_PATH (จะใช้ root path '/')
+    // สำหรับ deployment อื่นที่ต้องการ subpath: ตั้ง NEXT_PUBLIC_BASE_PATH=/kuscc-eval
+    basePath: process.env.NEXT_PUBLIC_BASE_PATH || (process.env.NODE_ENV === 'production' ? '/kuscc-eval' : ''),
     trailingSlash: true,
     images: {
         // เพิ่มส่วนนี้ครับ 👇
